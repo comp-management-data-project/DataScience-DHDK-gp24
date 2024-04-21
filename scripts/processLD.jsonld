@@ -1,0 +1,17 @@
+{
+  "@context": {
+    "@vocab": "http://w3id.org/data-science-dhdk",
+    "object id": "@id",
+    "acquisition": "hasAcquisition",
+    "processing": "hasProcessing",
+    "modelling": "hasModelling",
+    "optimising": "hasOptimising",
+    "exporting": "hasExporting",
+    "responsible institute": "hasResponsibleInstitute",
+    "responsible person": "hasResponsiblePerson",
+    "technique": "hasTechnique",
+    "tool": "hasTool",
+    "start date": "hasStartDate",
+    "end date": "hasEndDate"
+  }
+}
