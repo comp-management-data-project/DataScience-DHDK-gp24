@@ -2,6 +2,8 @@
 from sqlite3 import connect
 from json import load
 
+import sqlite3
+
 # imports for graph db
 from rdflib import RDF, Graph, URIRef, Literal
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
@@ -42,21 +44,68 @@ class UploadHandler(Handler):
 
     def pushDataToDb(path): #shouldn't be specified 'self' as a parameter?
         return False
+    
+    # alternative method: def pushDataToDb(self, json_file: str) -> bool:
 
 
-
-# Class to upload data from JSONs to SQLite database (incomplete) #Lucrezia
+# Class to upload data from JSONs to SQLite database #Lucrezia
 
 class ProcessDataUploadHandler(UploadHandler):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, json_file_path, db_file_path):
+        super().__init__()  # Initialize parent class
+        self.json_file_path = json_file_path
+        self.db_file_path = db_file_path
 
-    def pushDataToDb(self, json_file: str) -> bool:
-        with open(json_file) as f:
-            list_of_dict = load(f)
-            keys = list_of_dict[0].keys()
-            j_df = DataFrame(list_of_dict, columns=keys)
-            j_df = j_df.drop_duplicates(subset='object id', keep='first')#removing all duplicates from the dataframe
+    def process_data(self):
+        # Read JSON file into a pandas DataFrame
+        df = pd.read_json(self.json_file_path)
+
+        # Connect to SQLite database
+        conn = sqlite3.connect(self.db_file_path)
+
+        # Check if table exists in the database
+        table_exists = self.check_table_exists(conn)
+
+        # Write DataFrame to SQLite database
+        if table_exists:
+            # Append data to existing table, avoiding duplicates
+            self.append_data_to_table(df, conn)
+        else:
+            # If table does not exist, create new table
+            df.to_sql('data_table', conn, if_exists='replace', index=False)
+
+        # Commit changes and close connection
+        conn.commit()
+        conn.close()
+
+    # Check if 'data_table' exists in the database.
+    def check_table_exists(self, conn): 
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='data_table'")
+        return cursor.fetchone() is not None
+
+    #Append new data to 'data_table', avoiding duplicates
+    def append_data_to_table(self, df, conn):
+        existing_data = pd.read_sql('SELECT * FROM data_table', conn) # Retrieve existing data from database
+
+        # Filter new data to exclude existing duplicates and remove missing values (dropna)
+        new_data = df[~df.isin(existing_data)].dropna()
+
+        # Append filtered new data to 'data_table'
+        new_data.to_sql('data_table', conn, if_exists='append', index=False)
+
+
+#      Example usage:
+# json_file_path = 'data.json'
+# db_file_path = 'data.db'
+# handler = ProcessDataUploadHandler(json_file_path, db_file_path)
+# handler.process_data()
+
+
+# Here can go the class for uploading CSV files to Blazegraph database?
+class MetadataUploadHandler(UploadHandler):
+    def pushDataToDb(self, path):
+        pass
 
 
 
@@ -75,68 +124,78 @@ class QueryHandler(Handler):
 # Class to interact with SQL database running queries
 
 class ProcessDataQueryHandler(QueryHandler): #Lucrezia
-    def __init__(self):
-        self.dbPathOrUrl = ""
+    def __init__(self, dbPathOrUrl):
+        super().__init__()
+        self.dbPathOrUrl = dbPathOrUrl
 
-        # the 7 dataframes (queries) for ProcessDataQueryHandler need to be implemented
+    # helper method to reduce code clutter # Hubert!!
+    def executeQuery(self, sql_command): 
+        connection = connect(self.dbPathOrUrl)
+        cursor = connection.cursor()
+        cursor.execute(sql_command)
+        df = pd.DataFrame(cursor.fetchall(), columns=[description[0] for description in cursor.description])
+        connection.close()
+        return df
 
     def getAllActivities(self) -> DataFrame:
-        with connect(self.getDbPathOrUrl()) as con:
-            query_all_activities = f"""
-            """
-
-            df_all_activities = read_sql(query_all_activities, con)
-
-        return df_all_activities
+        sql_command = """
+        SELECT *
+        FROM Activity
+        """
+        return self.executeQuery(sql_command)
     
     def getActivitiesByResponsibleInstitution(self, partialName: str) -> DataFrame:
-        with connect(self.getDbPathOrUrl()) as con:
-            query = f"""
-            """
-            df = read_sql(query, con)
-        return df
+        sql_command = f"""
+        SELECT *
+        FROM Activity
+        WHERE responsibleInstitute LIKE '%{partialName}%'
+        """
+        return self.executeQuery(sql_command)
     
     def getActivitiesByResponsiblePerson(self, partialName: str) -> DataFrame:
-        with connect(self.getDbPathOrUrl()) as con:
-            query = f"""
-            """
-
-            df = read_sql(query, con)
-        return df
+        sql_command = f"""
+        SELECT *
+        FROM Activity
+        WHERE responsiblePerson LIKE '%{partialName}%'
+        """
+        return self.executeQuery(sql_command)
     
     def getActivitiesUsingTool(self, partialName: str) -> DataFrame:
-        with connect(self.getDbPathOrUrl()) as con:
-            query = f"""
-            """
-
-            df = read_sql(query, con)
-        return df
+        sql_command = f"""
+        SELECT *
+        FROM Activity
+        WHERE tool LIKE '%{partialName}%'
+        """
+        return self.executeQuery(sql_command)
     
     def getActivitiesStartedAfter(self, date: str) -> DataFrame:
-        with connect(self.getDbPathOrUrl()) as con:
-            query = f"""
-            """
-
-            df = read_sql(query, con)
-        return df
+        sql_command = f"""
+        SELECT *
+        FROM Activity
+        WHERE startDate > '{date}'
+        """
+        return self.executeQuery(sql_command)
     
     def getActivitiesEndedBefore(self, date: str) -> DataFrame:
-        with connect(self.getDbPathOrUrl()) as con:
-            query = f"""
-            """
-
-            df = read_sql(query, con)
-        return df
+        sql_command = f"""
+        SELECT *
+        FROM Activity
+        WHERE endDate < '{date}'
+        """
+        return self.executeQuery(sql_command)
 
     def getAcquisitionsByTechnique(self, partialName: str) -> DataFrame:
-        with connect(self.getDbPathOrUrl()) as con:
-            query = f"""
-            """
+        sql_command = """
+        SELECT *
+        FROM Acquisition
+        WHERE LOWER(technique) LIKE ?
+        ORDER BY objectId
+        """
+        # Using parameterized query to prevent SQL injection
+        partialName = '%' + partialName.lower() + '%'  # Convert partialName to lowercase
+        return self.executeQuery(sql_command, params=(partialName,))
+ 
 
-            df = read_sql(query, con)
-        return df    
-        
-        
         
 
 
@@ -164,18 +223,6 @@ class MetadataQueryHandler(QueryHandler):
                     row_dict.update({column: row[column]["value"]});
             df.loc[len(df)] = row_dict;
             df = df.reset_index(drop=True);
-        return df;
-
-    # UML methods go here
-
-    
-    # helper method to reduce code clutter
-    def executeQuery(self, sql_command): 
-        connection = connect(self.dbPathOrUrl);
-        cursor = connection.cursor();
-        cursor.execute(sql_command);
-        df = pd.DataFrame(cursor.fetchall(), columns = [description[0] for description in cursor.description]);
-        connection.close();
         return df;
 
     # UML methods go here
