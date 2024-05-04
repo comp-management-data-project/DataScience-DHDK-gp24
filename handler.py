@@ -57,8 +57,8 @@ class ProcessDataUploadHandler(UploadHandler):
         self.db_file_path = db_file_path
 
     def process_data(self):
-        # Read JSON file into a pandas DataFrame
-        df = pd.read_json(self.json_file_path)
+        # Read JSON file into a pandas DataFrame and avoid NaN objects
+        df = pd.read_json(self.json_file_path, keep_default_na=False)
 
         # Connect to SQLite database
         conn = sqlite3.connect(self.db_file_path)
@@ -72,27 +72,27 @@ class ProcessDataUploadHandler(UploadHandler):
             self.append_data_to_table(df, conn)
         else:
             # If table does not exist, create new table
-            df.to_sql('data_table', conn, if_exists='replace', index=False)
+            df.to_sql('activities_data_table', conn, if_exists='replace', index=False, dtype='string')
 
         # Commit changes and close connection
         conn.commit()
         conn.close()
 
-    # Check if 'data_table' exists in the database.
+    # Check if 'activities_data_table' exists in the database.
     def check_table_exists(self, conn): 
         cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='data_table'")
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='activities_data_table'")
         return cursor.fetchone() is not None
 
-    #Append new data to 'data_table', avoiding duplicates
+    #Append new data to 'activities_data_table', avoiding duplicates
     def append_data_to_table(self, df, conn):
-        existing_data = pd.read_sql('SELECT * FROM data_table', conn) # Retrieve existing data from database
+        existing_data = pd.read_sql('SELECT * FROM activities_data_table', conn) # Retrieve existing data from database
 
-        # Filter new data to exclude existing duplicates and remove missing values (dropna)
-        new_data = df[~df.isin(existing_data)].dropna()
+        # Filter new data to exclude existing duplicates and replace NaN with empty string
+        new_data = df[~df.isin(existing_data)].fillna('')
 
-        # Append filtered new data to 'data_table'
-        new_data.to_sql('data_table', conn, if_exists='append', index=False)
+        # Append filtered new data to 'activities_data_table'
+        new_data.to_sql('activities_data_table', conn, if_exists='append', index=False)
 
 
 #      Example usage:
@@ -116,8 +116,8 @@ class QueryHandler(Handler):
     def __init__(self, dbPathOrUrl): # overrides the first init but this class itself is never created so oh well
         self.dbPathOrUrl = dbPathOrUrl
 
-    def getById(self, id):
-        return None; # never accessed here and overridden in child class
+    def getById(self, id): # -> DataFrame:
+        return None # never accessed here and overridden in child class
 
 
 
