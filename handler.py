@@ -1,5 +1,8 @@
+import os
+
 # imports for relational db
 from sqlite3 import connect
+import json
 from json import load
 
 import sqlite3
@@ -11,7 +14,7 @@ import SPARQLWrapper
 
 # imports for both
 import pandas as pd
-from pandas import DataFrame, concat, read_csv, read_sql, Series
+from pandas import DataFrame, Series, concat, read_csv, read_sql
 
 from pprint import pprint as pp
 
@@ -22,87 +25,107 @@ class Handler:
     def __init__(self):
         self.dbPathOrUrl = ""
 
-    def __init__(self, dbPathOrUrl): # overrides the first init but this class itself is never created so oh well
-        self.dbPathOrUrl = dbPathOrUrl
-
     def getDbPathOrUrl(self):
         return self.dbPathOrUrl
 
-    def setDbPathOrUrl(self, pathOrUrl):
+    def setDbPathOrUrl(self, pathOrUrl: str) -> bool:
         self.dbPathOrUrl = pathOrUrl
-        if self.dbPathOrUrl == pathOrUrl:
-            return True
-        return False
-
+        return self.dbPathOrUrl == pathOrUrl
 
 class UploadHandler(Handler):
     def __init__(self):
-        self.dbPathOrUrl = ""
+        super().__init__()
 
-    def __init__(self, dbPathOrUrl): # overrides the first init but this class itself is never created so oh well
-        self.dbPathOrUrl = dbPathOrUrl
-
-    def pushDataToDb(path): #shouldn't be specified 'self' as a parameter?
-        return False
-    
-    # alternative method: def pushDataToDb(self, json_file: str) -> bool:
+    def pushDataToDb(self):
+        pass
 
 
 # Class to upload data from JSONs to SQLite database #Lucrezia
 
-class ProcessDataUploadHandler(UploadHandler):
-    def __init__(self, json_file_path, db_file_path):
-        super().__init__()  # Initialize parent class
-        self.json_file_path = json_file_path
-        self.db_file_path = db_file_path
+class ProcessDataUploadHandler(Handler):
+    def __init__(self, db_name="relational_database.db"):
+        super().__init__()
+        self.db_name = db_name
 
-    def process_data(self):
-        # Read JSON file into a pandas DataFrame and avoid NaN objects
-        df = pd.read_json(self.json_file_path, keep_default_na=False)
+    def process_data(self, json_data):
+        # Create a dictionary to map object IDs to internal identifiers
+        object_id_mapping = {}
+        for item in json_data:
+            object_id = item['object id']
+            object_internal_id = f"CH Object-{object_id}"
+            object_id_mapping[object_id] = object_internal_id
 
-        # Connect to SQLite database
-        conn = sqlite3.connect(self.db_file_path)
+        # Create DataFrames for each activity type and tools
+        activity_dfs = {}  # a dictionary
+        tools_data = []  # a list of dictionaries
+        for activity_type in json_data[0].keys():
+            if activity_type != 'object id':
+                activity_data = []
+                activity_count = 1
+                for item in json_data:
+                    activity = item.get(activity_type, {})
+                    if activity:  # Check if activity data exists
+                        object_id = item['object id']
+                        activity_internal_id = f"{activity_type.capitalize()}-{activity_count:02d}"  # Generate unique identifier
+                        activity_count += 1
+                        activity_data.append({
+                            "Activity_internal_id": activity_internal_id,
+                            "Refers To": object_id_mapping.get(object_id, ""),
+                            "Responsible Institute": activity.get("responsible institute", ""),
+                            "Responsible Person": activity.get("responsible person", ""),
+                            "Tool_internal_id": f"{activity_internal_id}-tool",  # Link to tools DataFrame
+                            "Start Date": activity.get("start date", ""),
+                            "End Date": activity.get("end date", ""),
+                            "Technique": activity.get("technique", "") if activity_type == "acquisition" else "",
+                        })
+                        # Collect tools data
+                        if 'tool' in activity:
+                            for tool in activity['tool']:
+                                tools_data.append({
+                                    "Tool_internal_id": f"{activity_internal_id}-tool",  # Generate unique tool internal identifier
+                                    "Tool": tool,
+                                    "Activity_internal_id": activity_internal_id
+                                })
+                activity_dfs[activity_type] = pd.DataFrame(activity_data)
 
-        # Check if table exists in the database
-        table_exists = self.check_table_exists(conn)
+        # Create DataFrame for tools
+        tools_df = pd.DataFrame(tools_data)
 
-        # Write DataFrame to SQLite database
-        if table_exists:
-            # Append data to existing table, avoiding duplicates
-            self.append_data_to_table(df, conn)
-        else:
-            # If table does not exist, create new table
-            df.to_sql('activities_data_table', conn, if_exists='replace', index=False, dtype='string')
+        return activity_dfs, tools_df
 
-        # Commit changes and close connection
-        conn.commit()
+    def pushDataToDb(self, activity_dfs, tools_df):
+        # Connect to the SQLite database
+        conn = sqlite3.connect(self.db_name)
+
+        # Loop through each DataFrame and upload it to the database
+        for activity_type, df in activity_dfs.items():
+            df.to_sql(activity_type.lower(), conn, if_exists='replace', index=False)
+
+        tools_df.to_sql('tools', conn, if_exists='replace', index=False)
+
+        # Close the connection
         conn.close()
 
-    # Check if 'activities_data_table' exists in the database.
-    def check_table_exists(self, conn): 
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='activities_data_table'")
-        return cursor.fetchone() is not None
+# Load JSON data
+file_path = os.path.join("resources", "process.json")
+with open(file_path, "r") as file:
+    json_data = json.load(file)
 
-    #Append new data to 'activities_data_table', avoiding duplicates
-    def append_data_to_table(self, df, conn):
-        existing_data = pd.read_sql('SELECT * FROM activities_data_table', conn) # Retrieve existing data from database
+# Instantiate the ProcessDataUploadHandler
+process_data_upload_handler = ProcessDataUploadHandler()
 
-        # Filter new data to exclude existing duplicates and replace NaN with empty string
-        new_data = df[~df.isin(existing_data)].fillna('')
+# Process the data
+activity_dfs, tools_df = process_data_upload_handler.process_data(json_data)
 
-        # Append filtered new data to 'activities_data_table'
-        new_data.to_sql('activities_data_table', conn, if_exists='append', index=False)
+# Push the data to the database
+process_data_upload_handler.pushDataToDb(activity_dfs, tools_df)
 
 
-#      Example usage:
-# json_file_path = 'data.json'
-# db_file_path = 'data.db'
-# handler = ProcessDataUploadHandler(json_file_path, db_file_path)
-# handler.process_data()
 
 
-# Here can go the class for uploading CSV files to Blazegraph database?
+
+# Here can go the class for uploading CSV files to Blazegraph database (?)
+
 class MetadataUploadHandler(UploadHandler):
     def pushDataToDb(self, path):
         pass

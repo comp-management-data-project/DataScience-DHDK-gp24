@@ -1,7 +1,6 @@
 from typing import Optional
 
 
-
 # CH Objects Data classes
 
 class IdentifiableEntity(object):
@@ -93,11 +92,12 @@ class Map(CulturalHeritageObject):
 
 class Activity(object): # Activity "refersTo" CHO
     def __init__(self, refersTo: CulturalHeritageObject, institute: str, person: str = None, tool: set = set(), start: str = None, end: str = None):
+        self.refersTo = refersTo
+        self.institute = institute
         self.person = person
         self.tool = tool
         self.start = start
         self.end = end
-        self.refersTo = refersTo
 
     def getResponsibleInstitute(self) -> str:
         return self.institute
@@ -120,7 +120,7 @@ class Activity(object): # Activity "refersTo" CHO
 
 class Acquisition(Activity):
     def __init__(self, refersTo: CulturalHeritageObject, institute: str, person: str, tool: set, start: str, end: str, technique: str):
-        super().__init__(refersTo, institute, person, tool, start, end)
+        super().__init__(refersTo, institute, person, list(tool), start, end) # Convert tool set to list
         self.technique = technique
     
     def getTechnique(self) -> str:
