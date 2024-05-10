@@ -90,9 +90,9 @@ class Map(CulturalHeritageObject):
 
 # Processes Data class
 
-class Activity(object): # Activity "refersTo" CHO
-    def __init__(self, refersTo: CulturalHeritageObject, institute: str, person: str = None, tool: set = set(), start: str = None, end: str = None):
-        self.refersTo = refersTo
+class Activity(object):
+    def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str = None, tool: set = set(), start: str = None, end: str = None):
+        self.refersTo_cho = refersTo_cho
         self.institute = institute
         self.person = person
         self.tool = tool
@@ -114,13 +114,13 @@ class Activity(object): # Activity "refersTo" CHO
     def getEndDate(self) -> Optional[str]:
         return self.end
     
-    def getRefersTo(self) -> CulturalHeritageObject:
-        return self.refersTo
+    def getRefersTo_cho(self) -> CulturalHeritageObject:
+        return self.refersTo_cho
 
 
 class Acquisition(Activity):
-    def __init__(self, refersTo: CulturalHeritageObject, institute: str, person: str, tool: set, start: str, end: str, technique: str):
-        super().__init__(refersTo, institute, person, list(tool), start, end) # Convert tool set to list
+    def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str, tool: set, start: str, end: str, technique: str):
+        super().__init__(refersTo_cho, institute, person, tool, start, end)
         self.technique = technique
     
     def getTechnique(self) -> str:
@@ -137,3 +137,35 @@ class Optimising(Activity):
 
 class Exporting(Activity):
     pass
+
+
+# Basic handlers 
+# Hubert
+
+class Handler:
+    def __init__(self):
+        self.dbPathOrUrl = ""
+
+    def getDbPathOrUrl(self):
+        return self.dbPathOrUrl
+
+    def setDbPathOrUrl(self, pathOrUrl: str) -> bool:
+        self.dbPathOrUrl = pathOrUrl
+        return self.dbPathOrUrl == pathOrUrl
+
+
+class UploadHandler(Handler):
+    def __init__(self):
+        super().__init__()
+
+    def pushDataToDb(self):
+        pass
+
+
+class QueryHandler(Handler): 
+    def __init__(self, dbPathOrUrl=""):  # Provide a default value for dbPathOrUrl
+        super().__init__()
+        self.dbPathOrUrl = dbPathOrUrl
+
+    def getById(self, id):
+        return None
