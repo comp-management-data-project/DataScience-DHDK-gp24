@@ -16,6 +16,7 @@ class BasicMashup:  #Hubert
     def __init__(self):
         self.metadataQuery = [];
         self.processQuery = [];
+
         Entityid = pd.read_csv("meta.csv")
         Entity = []
         for id in Entityid:
@@ -35,6 +36,22 @@ class BasicMashup:  #Hubert
     def __init__(self, metadataQuery, processQuery):
         self.metadataQuery = metadataQuery;
         self.processQuery = processQuery;
+    
+    def cleanMetadataHandlers(self):
+        self.metadataQuery = [];
+        return True;
+
+    def cleanProcessHandlers(self):
+        self.processQuery = [];
+        return True;
+
+    def addMetadataHandler(self, handler):
+        self.metadataQuery.append(handler);
+        return True;
+
+    def addProcessHandler(self, handler):
+        self.processQuery.append(handler);
+        return True;
 
     # helper method to reduce code clutter # Hubert
     # column names here might have to be changed, depending on your implementation of loading data to sql
@@ -64,94 +81,94 @@ class BasicMashup:  #Hubert
         cho_list = [];
         for idx, row in cho_df.iterrows():
             if "Nautical_chart" in row["type"]:
-                obj = NauticalChart();
+                obj = impl.NauticalChart();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
             elif "Manuscript_plate" in row["type"]:
-                obj = ManuscriptPlate();
+                obj = impl.ManuscriptPlate();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
             elif "Manuscript_volume" in row["type"]:
-                obj = ManuscriptVolume();
+                obj = impl.ManuscriptVolume();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
             elif "Printed_volume" in row["type"]:
-                obj = PrintedVolume();
+                obj = impl.PrintedVolume();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
             elif "Printed_material" in row["type"]:
-                obj = PrintedMaterial();
+                obj = impl.PrintedMaterial();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
             elif "Herbarium" in row["type"]:
-                obj = Herbarium();
+                obj = impl.Herbarium();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
             elif "Specimen" in row["type"]:
-                obj = Specimen();
+                obj = impl.Specimen();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
             elif "Painting" in row["type"]:
-                obj = Painting();
+                obj = impl.Painting();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
             elif "Model" in row["type"]:
-                obj = Model();
+                obj = impl.Model();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
             elif "Map" in row["type"]:
-                obj = Map();
+                obj = impl.Map();
                 obj.id = row["id"];
                 obj.title = row["title"];
                 obj.date = row["date"];
                 obj.owner = row["owner"];
                 obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
+                obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
         return cho_list;
 
