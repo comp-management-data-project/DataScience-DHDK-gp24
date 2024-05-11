@@ -220,8 +220,26 @@ query_handler = ProcessDataQueryHandler(dbPathOrUrl="relational_database.db")
 # please remove semicolons at the end of the lines
 
 class MetadataQueryHandler(QueryHandler):
-    def __init__(self):
-        self.dbPathOrUrl = ""
+    def __init__(self, getById):
+        self.getById = getById
+    def getAllPeople(self, Allpeople):
+        Allpeople_csv = self.getById("Author")
+        Allpeople = pd.DataFrame(Allpeople_csv)
+        return Allpeople
+
+    def getAllCulturalHeritageObjects(self, HeritageObjects):
+        HeritageObjects = pd.read_csv("meta.csv")
+        return HeritageObjects
+
+    def getAuthorsOfCulturalHeritageObject(self, objectid, AuthorsOfCulturalHeritageObject):
+        AuthorsOfCulturalHeritageObject = pd.read_csv("meta.csv")
+        Authorid = AuthorsOfCulturalHeritageObject[AuthorsOfCulturalHeritageObject["objectid"] == objectid]
+        return Authorid
+
+    def getCulturalHeritageObjectsAuthoredBy(self, personid, CulturalHeritageObjectsAuthoredBy):
+        CulturalHeritageObjectsAuthoredBy = pd.read_csv("meta.csv")
+        AuthoredBy = CulturalHeritageObjectsAuthoredBy[getAuthorsOfCulturalHeritageObjects(input_id)] == [input_id, CulturalHeritageObjectsAuthoredBy]
+        return AuthoredBy
 
     # helper method to reduce code clutter
     def execute_query(self, query): 
