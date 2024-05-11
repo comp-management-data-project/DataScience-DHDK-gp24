@@ -17,6 +17,21 @@ class BasicMashup:
     def __init__(self):
         self.metadataQuery = [];
         self.processQuery = [];
+        Entityid = pd.read_csv("meta.csv")
+        Entity = []
+        for id in Entityid:
+            if id.Entityid == Entityid:
+                return Entity
+            else:
+                return None
+    def getAllPeople():
+        Allpeople = []
+        People = pd.read_csv("meta.csv", keep_default_na=False, dtype= {
+            "id": "string", "Type":"string", "Title":"String","Date":"String", "Author":"String", "Owner":"String", "Place":"String"})
+        PeopleNames = People["Author"]
+        for i in PeopleNames:
+            Allpeople.append(PeopleNames)
+        return Allpeople
 
     def __init__(self, metadataQuery, processQuery):
         self.metadataQuery = metadataQuery;
