@@ -60,19 +60,19 @@ class BasicMashup:
         activities = [];
         for idx, row in df.iterrows():
             if row["Activity_internal_id"].contains("acquisition"):
-                activity = impl.Acquisition(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"], row["Technique"]);
+                activity = impl.Acquisition(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-').lstrip("0"), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"], row["Technique"]);
                 activities.append(activity);
             if row["Activity_internal_id"].contains("processing"):
-                activity = impl.Processing(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
+                activity = impl.Processing(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-').lstrip("0"), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
                 activities.append(activity);
             if row["Activity_internal_id"].contains("modelling"):
-                activity = impl.Modelling(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
+                activity = impl.Modelling(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-').lstrip("0"), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
                 activities.append(activity);
             if row["Activity_internal_id"].contains("optimising"):
-                activity = impl.Optimising(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
+                activity = impl.Optimising(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-').lstrip("0"), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
                 activities.append(activity);
             if row["Activity_internal_id"].contains("exporting"):
-                activity = impl.Exporting(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
+                activity = impl.Exporting(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-').lstrip("0"), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
                 activities.append(activity);
         return activities;
 
