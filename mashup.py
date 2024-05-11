@@ -1,3 +1,5 @@
+import impl, query, upload
+
 # imports for relational db
 from sqlite3 import connect
 from json import load
@@ -10,9 +12,10 @@ import SPARQLWrapper;
 # imports for both
 import pandas as pd
 from pandas import DataFrame, Series
-import impl, query, upload
 
-class BasicMashup:  #Hubert
+
+
+class BasicMashup(object):  #Hubert
     def __init__(self):
         self.metadataQuery = [];
         self.processQuery = [];
@@ -24,6 +27,7 @@ class BasicMashup:  #Hubert
                 return Entity
             else:
                 return None
+
     def getAllPeople():
         Allpeople = []
         People = pd.read_csv("meta.csv", keep_default_na=False, dtype= {
@@ -55,29 +59,41 @@ class BasicMashup:  #Hubert
 
     # helper method to reduce code clutter # Hubert
     # column names here might have to be changed, depending on your implementation of loading data to sql
-    def createActivityList(self, df): 
-        activities = [];
-        for idx, row in df.iterrows():
-            if row["Activity_internal_id"].contains("acquisition"):
-                activity = impl.Acquisition(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"], row["Technique"]);
-                activities.append(activity);
-            if row["Activity_internal_id"].contains("processing"):
-                activity = impl.Processing(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
-                activities.append(activity);
-            if row["Activity_internal_id"].contains("modelling"):
-                activity = impl.Modelling(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
-                activities.append(activity);
-            if row["Activity_internal_id"].contains("optimising"):
-                activity = impl.Optimising(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
-                activities.append(activity);
-            if row["Activity_internal_id"].contains("exporting"):
-                activity = impl.Exporting(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
-                activities.append(activity);
-        return activities;
+    def createActivityList(self) -> list[impl.Activity]: # Hubert
+        activities = []
+
+        if self.metadataQuery:
+            activities_data = self.metadataQuery.getAllActivities()
+            for idx, row in activities_data.iterrows():
+                activity_type = row["type"]
+                cultural_object = impl.CulturalHeritageObject(row["object id"], "", "", "", "")
+                institute = row[activity_type]["responsible institute"]
+                person = row[activity_type]["responsible person"]
+                tool = set(row[activity_type]["tool"])
+                start = row[activity_type]["start date"]
+                end = row[activity_type]["end date"]
+                technique = row[activity_type]["technique"] if activity_type == "acquisition" else ""
+
+                if activity_type == "acquisition":
+                    activity = impl.Acquisition(cultural_object, institute, person, tool, start, end, technique)
+                elif activity_type == "processing":
+                    activity = impl.Processing(cultural_object, institute, person, tool, start, end)
+                elif activity_type == "modelling":
+                    activity = impl.Modelling(cultural_object, institute, person, tool, start, end)
+                elif activity_type == "optimising":
+                    activity = impl.Optimising(cultural_object, institute, person, tool, start, end)
+                elif activity_type == "exporting":
+                    activity = impl.Exporting(cultural_object, institute, person, tool, start, end)
+                else:
+                    continue  # Skip unknown activity types
+
+                activities.append(activity)
+
+        return activities
 
     # helper method to reduce code clutter
     # column names here might have to be changed, depending on your implementation of loading data to sparql
-    def createObjectList(self, cho_df): 
+    def createObjectList(self, cho_df): # Hubert
         cho_list = [];
         for idx, row in cho_df.iterrows():
             if "Nautical_chart" in row["type"]:
@@ -193,35 +209,35 @@ class BasicMashup:  #Hubert
     def getCulturalHeritageObjectsAuthoredBy(self, AuthorId: str) -> list[impl.CulturalHeritageObject]:  #
         pass
 
-    def getAllActivities(self) -> list[impl.Activity]:  # Lucrezia
-        activities = dict()
+    def getAllActivities(self) -> list[impl.Activity]: # Lucrezia
+        activities = []
         for processGrinder in self.processQuery:
             df_process = processGrinder.getAllActivities()
             for idx, row in df_process.iterrows():
                 object_id = row["objectId"]
                 cultural_object = self.getEntityById(str(object_id))
                 institute = row["responsibleInstitute"]
-                person = row["responsiblePerson"] if row["responsiblePerson"] else None
+                person = row["responsiblePerson"]
                 tool = set(row["tool"].split(', ')) if row["tool"] else set()
-                start = row["startDate"] if row["startDate"] else None
-                end = row["endDate"] if row["endDate"] else None
-                internal = row["internalId"]
+                start = row["startDate"]
+                end = row["endDate"]
+                internal_id = row["internalId"].lower()
 
-                if "acquisition" in internal.lower():
+                if "acquisition" in internal_id:
                     technique = row["technique"]
-                    activity = impl.Acquisition(technique, institute, cultural_object, person, tool, start, end)
-                elif "processing" in internal:
-                    activity = impl.Processing(institute, cultural_object, person, tool, start, end)
-                elif "exporting" in internal:
-                    activity = impl.Exporting(institute, cultural_object, person, tool, start, end)
-                elif "modelling" in internal:
-                    activity = impl.Modelling(institute, cultural_object, person, tool, start, end)
+                    activity = impl.Acquisition(cultural_object, institute, person, tool, start, end, technique)
+                elif "processing" in internal_id:
+                    activity = impl.Processing(cultural_object, institute, person, tool, start, end)
+                elif "exporting" in internal_id:
+                    activity = impl.Exporting(cultural_object, institute, person, tool, start, end)
+                elif "modelling" in internal_id:
+                    activity = impl.Modelling(cultural_object, institute, person, tool, start, end)
                 else:
-                    activity = impl.Optimising(institute, cultural_object, person, tool, start, end)
+                    activity = impl.Optimising(cultural_object, institute, person, tool, start, end)
 
-                activities[internal] = activity
+                activities.append(activity)
 
-        return list(activities.values())
+        return activities
     
     def getActivitiesByResponsibleInstitution(self, partialName: str) -> list[impl.Activity]: # who is doing this
         pass
@@ -229,13 +245,13 @@ class BasicMashup:  #Hubert
     def getActivitiesByResponsiblePerson(self, partialName: str) -> list[impl.Activity]:  # who
         pass
 
-    def getActivitiesUsingTool(self, partialName: str) -> list[impl.Activity]:  # Lucrezia
+    def getActivitiesUsingTool(self, partial_name: str) -> list[impl.Activity]: # Lucrezia
         activities = []
         for activity in self.getAllActivities():
             tools = activity.getTools()
             if tools:
                 for tool in tools:
-                    if partialName.lower() in tool.lower():
+                    if partial_name.lower() in tool.lower():
                         activities.append(activity)
                         break
         return activities

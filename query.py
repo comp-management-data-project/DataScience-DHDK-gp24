@@ -1,4 +1,4 @@
-from impl import *
+import impl
 
 import os
 from typing import Optional
@@ -22,33 +22,9 @@ from pandas import DataFrame, concat, read_csv, read_sql, Series
 
 
 
-# Basic handlers 
-# Hubert
-
-class Handler:
-    def __init__(self):
-        self.dbPathOrUrl = ""
-
-    def getDbPathOrUrl(self):
-        return self.dbPathOrUrl
-
-    def setDbPathOrUrl(self, pathOrUrl: str) -> bool:
-        self.dbPathOrUrl = pathOrUrl
-        return self.dbPathOrUrl == pathOrUrl
-    
-class QueryHandler(Handler): 
-    def __init__(self, dbPathOrUrl=""):  # Provide a default value for dbPathOrUrl
-        super().__init__()
-        self.dbPathOrUrl = dbPathOrUrl
-
-    def getById(self, id):
-        return None
-
-
-
 # Class to interact with SQL database 
 
-class ProcessDataQueryHandler(Handler):
+class ProcessDataQueryHandler(impl.Handler):
     def __init__(self, dbPathOrUrl=""):
         super().__init__()
         self.dbPathOrUrl = dbPathOrUrl
@@ -219,7 +195,7 @@ query_handler = ProcessDataQueryHandler(dbPathOrUrl="relational_database.db")
 # Class to interact with Blazegraph
 # please remove semicolons at the end of the lines
 
-class MetadataQueryHandler(QueryHandler):
+class MetadataQueryHandler(impl.QueryHandler):
     def __init__(self, getById):
         self.getById = getById
     def getAllPeople(self, Allpeople):

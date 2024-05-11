@@ -166,10 +166,12 @@ class QueryHandler(Handler):
     def __init__(self, dbPathOrUrl=""):  # Provide a default value for dbPathOrUrl
         super().__init__()
         self.dbPathOrUrl = dbPathOrUrl
-          def getById(self, id):
+    
+    def getById(self, id):
         idDataFrame = idDataFrame["id"]
         self.getById = idDataFrame
         return self.getById
+    
     def MetadataQueryHandler(QueryHandler):
         def getAllPeople(self):
             return
