@@ -1,5 +1,5 @@
 # imports for relational db
-from sqlite3 import connect;
+from sqlite3 import connect
 from json import load
 
 # imports for graph db
@@ -10,10 +10,9 @@ import SPARQLWrapper;
 # imports for both
 import pandas as pd
 from pandas import DataFrame, Series
-import impl, query, upload;
+import impl, query, upload
 
-# mashups #Hubert
-class BasicMashup:
+class BasicMashup:  #Hubert
     def __init__(self):
         self.metadataQuery = [];
         self.processQuery = [];
@@ -54,7 +53,7 @@ class BasicMashup:
         self.processQuery.append(handler);
         return True;
 
-    # helper method to reduce code clutter
+    # helper method to reduce code clutter # Hubert
     # column names here might have to be changed, depending on your implementation of loading data to sql
     def createActivityList(self, df): 
         activities = [];
@@ -172,3 +171,93 @@ class BasicMashup:
                 obj.author = [impl.Person(row["author_id"], row["author_name"])];
                 cho_list.append(obj)
         return cho_list;
+
+    def cleanMetadataHandlers(self) -> bool:  #
+        pass
+
+    def cleanProcessHandlers(self) -> bool:  #
+        pass
+
+    def addMetadataHandler(self, handler: query.MetadataQueryHandler) -> bool:  #
+        pass
+
+    def getEntityById(self, entity_id: str) -> impl.IdentifiableEntity | None:  #
+        pass
+
+    def getAllCulturalHeritageObjects(self) -> list[impl.CulturalHeritageObject]:  #
+        pass
+
+    def getAuthorsOfCulturalHeritageObject(self, objectId: str) -> list[impl.Person]:  # 
+        pass
+    
+    def getCulturalHeritageObjectsAuthoredBy(self, AuthorId: str) -> list[impl.CulturalHeritageObject]:  #
+        pass
+
+    def getAllActivities(self) -> list[impl.Activity]:  # Lucrezia
+        activities = dict()
+        for processGrinder in self.processQuery:
+            df_process = processGrinder.getAllActivities()
+            for idx, row in df_process.iterrows():
+                object_id = row["objectId"]
+                cultural_object = self.getEntityById(str(object_id))
+                institute = row["responsibleInstitute"]
+                person = row["responsiblePerson"] if row["responsiblePerson"] else None
+                tool = set(row["tool"].split(', ')) if row["tool"] else set()
+                start = row["startDate"] if row["startDate"] else None
+                end = row["endDate"] if row["endDate"] else None
+                internal = row["internalId"]
+
+                if "acquisition" in internal.lower():
+                    technique = row["technique"]
+                    activity = impl.Acquisition(technique, institute, cultural_object, person, tool, start, end)
+                elif "processing" in internal:
+                    activity = impl.Processing(institute, cultural_object, person, tool, start, end)
+                elif "exporting" in internal:
+                    activity = impl.Exporting(institute, cultural_object, person, tool, start, end)
+                elif "modelling" in internal:
+                    activity = impl.Modelling(institute, cultural_object, person, tool, start, end)
+                else:
+                    activity = impl.Optimising(institute, cultural_object, person, tool, start, end)
+
+                activities[internal] = activity
+
+        return list(activities.values())
+    
+    def getActivitiesByResponsibleInstitution(self, partialName: str) -> list[impl.Activity]: # who is doing this
+        pass
+
+    def getActivitiesByResponsiblePerson(self, partialName: str) -> list[impl.Activity]:  # who
+        pass
+
+    def getActivitiesUsingTool(self, partialName: str) -> list[impl.Activity]:  # Lucrezia
+        activities = []
+        for activity in self.getAllActivities():
+            tools = activity.getTools()
+            if tools:
+                for tool in tools:
+                    if partialName.lower() in tool.lower():
+                        activities.append(activity)
+                        break
+        return activities
+    
+    def getActivitiesStartedAfter(self, date: str) -> list[impl.Activity]:  # who
+        pass
+
+    def getActivitiesEndedBefore(self, date: str) -> list[impl.Activity]:  # 
+        pass
+
+    def getAcquisitionsByTechnique(self, partialName: str) -> list[impl.Acquisition]:  #
+        pass
+
+class AdvancedMashup(BasicMashup):
+    def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]:  #
+        pass
+
+    def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
+        pass
+
+    def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
+        pass
+
+    def getAuthorsOfObjectsAcquiredInTimeFrame(self, start: str, end: str) -> list[impl.Person]:  # 
+        pass
