@@ -10,7 +10,7 @@ import SPARQLWrapper;
 # imports for both
 import pandas as pd
 from pandas import DataFrame, Series
-
+import impl, query, upload;
 
 # mashups #Hubert
 class BasicMashup:
@@ -42,20 +42,20 @@ class BasicMashup:
     def createActivityList(self, df): 
         activities = [];
         for idx, row in df.iterrows():
-            if row["type"] == "acquisition":
-                activity = Acquisition(row["responsible_institute"], row["responsible_person"], row["tool"], row["start_date"], row["end_date"], row["object_id"], row["technique"]);
+            if row["Activity_internal_id"].contains("acquisition"):
+                activity = impl.Acquisition(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"], row["Technique"]);
                 activities.append(activity);
-            elif row["type"] == "processing":
-                activity = Processing(row["responsible_institute"], row["responsible_person"], row["tool"], row["start_date"], row["end_date"], row["object_id"]);
+            if row["Activity_internal_id"].contains("processing"):
+                activity = impl.Processing(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
                 activities.append(activity);
-            elif row["type"] == "modelling":
-                activity = Modelling(row["responsible_institute"], row["responsible_person"], row["tool"], row["start_date"], row["end_date"], row["object_id"]);
+            if row["Activity_internal_id"].contains("modelling"):
+                activity = impl.Modelling(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
                 activities.append(activity);
-            elif row["type"] == "optimising":
-                activity = Optimising(row["responsible_institute"], row["responsible_person"], row["tool"], row["start_date"], row["end_date"], row["object_id"]);
+            if row["Activity_internal_id"].contains("optimising"):
+                activity = impl.Optimising(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
                 activities.append(activity);
-            elif row["type"] == "exporting":
-                activity = Exporting(row["responsible_institute"], row["responsible_person"], row["tool"], row["start_date"], row["end_date"], row["object_id"]);
+            if row["Activity_internal_id"].contains("exporting"):
+                activity = impl.Exporting(impl.CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""), row["Responsible Institute"], row["Responsible Person"], row["Tool"], row["Start Date"], row["End Date"]);
                 activities.append(activity);
         return activities;
 
