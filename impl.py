@@ -142,7 +142,7 @@ class Exporting(Activity):
 # Basic handlers 
 # Hubert
 
-class Handler:
+class Handler(object):
     def __init__(self):
         self.dbPathOrUrl = ""
 

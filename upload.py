@@ -1,4 +1,4 @@
-from impl import *
+import impl
 
 import os
 from typing import Optional
@@ -22,34 +22,10 @@ from pandas import DataFrame, concat, read_csv, read_sql, Series
 
 
 
-# Basic handlers 
-# Hubert
-
-class Handler:
-    def __init__(self):
-        self.dbPathOrUrl = ""
-
-    def getDbPathOrUrl(self):
-        return self.dbPathOrUrl
-
-    def setDbPathOrUrl(self, pathOrUrl: str) -> bool:
-        self.dbPathOrUrl = pathOrUrl
-        return self.dbPathOrUrl == pathOrUrl
-
-
-class UploadHandler(Handler):
-    def __init__(self):
-        super().__init__()
-
-    def pushDataToDb(self):
-        pass
-
-
-
 # Class to upload data from JSONs to SQLite database 
 #Lucrezia
 
-class ProcessDataUploadHandler(Handler):
+class ProcessDataUploadHandler(impl.Handler):
     def __init__(self, db_name="relational_database.db"):
         super().__init__()
         self.db_name = db_name
@@ -136,7 +112,7 @@ process_data_upload_handler.pushDataToDb(activity_dfs, tools_df)
 
 
 # Class to upload CSV files to Blazegraph
-class MetadataUploadHandler(UploadHandler):
+class MetadataUploadHandler(impl.UploadHandler):
     def __init__(self, dbPathOrUrl):
         self.dbPathOrUrl = "";
 
