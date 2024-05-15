@@ -1,4 +1,4 @@
-import impl
+from impl import *
 
 import os
 from typing import Optional
@@ -25,12 +25,16 @@ from pandas import DataFrame, concat, read_csv, read_sql, Series
 # Class to upload data from JSONs to SQLite database 
 #Lucrezia
 
-class ProcessDataUploadHandler(impl.Handler):
-    def __init__(self, db_name="relational_database.db"):
+class ProcessDataUploadHandler(Handler):
+    def __init__(self, db_name=""):
         super().__init__()
         self.db_name = db_name
 
     def process_data(self, json_data):
+        file_path = os.path.join("resources", "process.json")
+        with open(file_path, "r") as file:
+            json_data = json.load(file)
+
         object_id_mapping = self.map_object_ids(json_data)
         activity_dfs, tools_data = self.create_dataframes(json_data, object_id_mapping)
         return activity_dfs, tools_data
@@ -44,8 +48,8 @@ class ProcessDataUploadHandler(impl.Handler):
         return object_id_mapping
 
     def create_dataframes(self, json_data, object_id_mapping):
-        activity_dfs = {}
-        tools_data = []
+        activity_dfs = {} # a dictionary to store DataFrames for each activity type
+        tools_data = [] # a list to store tool-related data
         for activity_type in json_data[0].keys():
             if activity_type != 'object id':
                 activity_data = []
@@ -77,14 +81,17 @@ class ProcessDataUploadHandler(impl.Handler):
         tools_df = pd.DataFrame(tools_data)
         return activity_dfs, tools_df
 
+
     def pushDataToDb(self, activity_dfs, tools_df):
         try:
             with connect(self.db_name) as conn:
                 for activity_type, df in activity_dfs.items():
                     df.to_sql(activity_type.capitalize(), conn, if_exists='replace', index=False)
                 tools_df.to_sql('Tools', conn, if_exists='replace', index=False)
+            return True  # Return True if all operations succeed
         except Exception as e:
             print(f"Error occurred while pushing data to DB: {str(e)}")
+            return False  # Return False if any error occurs
 
     def handle_duplicates(self, df, conn, table_name):
         existing_data = pd.read_sql(f"SELECT * FROM {table_name}", conn)
@@ -92,26 +99,13 @@ class ProcessDataUploadHandler(impl.Handler):
         if not existing_data.empty:
             df = pd.concat([existing_data, df]).drop_duplicates(keep='first')
         return df
-
-
-# Load JSON data
-file_path = os.path.join("resources", "process.json")
-with open(file_path, "r") as file:
-    json_data = json.load(file)
-
-# Instantiate the ProcessDataUploadHandler
-process_data_upload_handler = ProcessDataUploadHandler()
-
-# Process the data
-activity_dfs, tools_df = process_data_upload_handler.process_data(json_data)
-
-# Push the data to the database
-process_data_upload_handler.pushDataToDb(activity_dfs, tools_df)
+    
 
 
 
 
 # Class to upload CSV files to Blazegraph
+
 class MetadataUploadHandler(impl.UploadHandler):
     def __init__(self, dbPathOrUrl):
         self.dbPathOrUrl = "";

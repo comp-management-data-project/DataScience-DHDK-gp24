@@ -1,7 +1,7 @@
 from typing import Optional
 
 
-# CH Objects Data classes
+# CH Objects Metadata classes
 
 class IdentifiableEntity(object):
     def __init__(self, id: str):
@@ -21,7 +21,7 @@ class Person(IdentifiableEntity):
 
 
 class CulturalHeritageObject(IdentifiableEntity):
-    def __init__(self, id: str, title: str, owner: str, place: str, date: str = None, hasAuthor: list = None):
+    def __init__(self, id: str, title: str, date: str, hasAuthor: list[Person], owner: str, place: str):
         self.title = title
         self.date = date
         self.owner = owner
@@ -36,14 +36,14 @@ class CulturalHeritageObject(IdentifiableEntity):
     def getDate(self) -> Optional[str]:
         return self.date
 
+    def getAuthors(self) -> list[Person]: #Returns a list of authors (Person objects)
+        return self.hasAuthor
+    
     def getOwner(self) -> str:
         return self.owner
-
+    
     def getPlace(self) -> str:
         return self.place
-
-    def getAuthors(self) -> list: #Returns a list of authors (Person objects)
-        return self.hasAuthor
 
 
 class NauticalChart(CulturalHeritageObject):
@@ -88,10 +88,10 @@ class Map(CulturalHeritageObject):
 
 
 
-# Processes Data class
+# Processes Data classes
 
-class Activity(object):
-    def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str = None, tool: set = set(), start: str = None, end: str = None):
+class Activity(object): # Lucrezia
+    def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str, start: str, end: str, tool: set = set()):
         self.refersTo_cho = refersTo_cho
         self.institute = institute
         self.person = person
@@ -119,8 +119,8 @@ class Activity(object):
 
 
 class Acquisition(Activity):
-    def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str, tool: set, start: str, end: str, technique: str):
-        super().__init__(refersTo_cho, institute, person, tool, start, end)
+    def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str, start: str, end: str, technique: str, tool: set = set()):
+        super().__init__(refersTo_cho, institute, person, start, end, tool)
         self.technique = technique
     
     def getTechnique(self) -> str:
@@ -139,7 +139,7 @@ class Exporting(Activity):
     pass
 
 
-# Basic handlers 
+# Basic Handlers classes
 # Hubert
 
 class Handler(object):
@@ -167,14 +167,13 @@ class QueryHandler(Handler):
         super().__init__()
         self.dbPathOrUrl = dbPathOrUrl
     
-    def getById(self, id):
-        idDataFrame = idDataFrame["id"]
-        self.getById = idDataFrame
-        return self.getById
-    
-    def MetadataQueryHandler(QueryHandler):
-        def getAllPeople(self):
-            return
+    idDataFrame = None
 
-    def getById(self, id):
-        return None
+    def set_id_dataframe(self, dataframe):
+        self.idDataFrame = dataframe
+
+    def getById(self, id: str):
+        if self.idDataFrame is None:
+            raise ValueError("idDataFrame is not set. Call set_id_dataframe first.")
+        id_value = self.idDataFrame["id"]
+        return id_value

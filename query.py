@@ -1,4 +1,4 @@
-import impl
+from impl import *
 
 import os
 from typing import Optional
@@ -24,7 +24,7 @@ from pandas import DataFrame, concat, read_csv, read_sql, Series
 
 # Class to interact with SQL database 
 
-class ProcessDataQueryHandler(impl.Handler):
+class ProcessDataQueryHandler(Handler):
     def __init__(self, dbPathOrUrl=""):
         super().__init__()
         self.dbPathOrUrl = dbPathOrUrl
@@ -187,8 +187,6 @@ class ProcessDataQueryHandler(impl.Handler):
         """.format(partialName.lower())
         return self.executeQuery(sql_command)
 
-# Instantiate ProcessDataQueryHandler
-query_handler = ProcessDataQueryHandler(dbPathOrUrl="relational_database.db")
 
 
 
