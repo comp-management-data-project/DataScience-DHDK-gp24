@@ -22,23 +22,6 @@ class BasicMashup(object):  #Hubert
         self.metadataQuery = [];
         self.processQuery = [];
 
-        Entityid = pd.read_csv("meta.csv")
-        Entity = []
-        for id in Entityid:
-            if id.Entityid == Entityid:
-                return Entity
-            else:
-                return None
-
-    def getAllPeople():
-        Allpeople = []
-        People = pd.read_csv("meta.csv", keep_default_na=False, dtype= {
-            "id": "string", "Type":"string", "Title":"String","Date":"String", "Author":"String", "Owner":"String", "Place":"String"})
-        PeopleNames = People["Author"]
-        for i in PeopleNames:
-            Allpeople.append(PeopleNames)
-        return Allpeople
-
     def __init__(self, metadataQuery, processQuery):
         self.metadataQuery = metadataQuery;
         self.processQuery = processQuery;
@@ -262,6 +245,17 @@ class BasicMashup(object):  #Hubert
                 cho_list.append(obj)
         return cho_list;
 
+    """
+    general sidenote: do filtering with SQL and SPARQL
+    """
+    
+    """
+    good try, however:
+    - here we should implement getById in the MetadataQueryHandler I'm afraid, and run two queries, one checking for id of authors, another for id of objects
+    - remember that this class has a list of MetadataQueryHandler objects, so to get the dataframe, use something like cho_df = self.metadataQuery[0].getById(id)
+    - also beforehand check if there are any handlers actually in the list like if self.metadataQuery: 
+    - then you'll have to check if the dataframe has a cultural heritage objects or a person
+    """
     def getEntityById(self, cho_df, entity_id: str) -> impl.IdentifiableEntity | None:  #Giorgia
         entity_list = []
         for entity in self.createObjectList(cho_df):
@@ -272,15 +266,45 @@ class BasicMashup(object):  #Hubert
         else: 
             return None
 
+    """
+    I've added my getAllPeople() function, as it's a nice start for all the other functions of this class
+    """
+    def getAllPeople(self):
+        person_list = [];
+        if len(self.metadataQuery) > 0:
+            person_df = self.metadataQuery[0].getAllPeople();
+            for idx, row in person_df.iterrows():
+                person = Person(row["id"], row["name"]);
+                person_list.append(person);
+        return person_list;
+    
+    """
+    alright so:
+    - at the start, remember to initialise the list of returned objects as empty and writing the return statement
+    - cho_df should be retrieved from a handler from this class' list of MetadataQueryHandlers, not passed in the constructor
+    - eg. cho_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
+    - then you pass this cho_df as an argument for the createObjectList, so: cho_list = self.createObjectList(cho_df)
+    - these two lines should be a part of an if statement checking if the list of metadata handlers is not empty: if self.metadataQuery:
+    (take a look at getAllActivities)
+    """
     def getAllCulturalHeritageObjects(self, cho_df) -> list[impl.CulturalHeritageObject]:  #Iheb
        cho_list =  self.createObjectList()
        return cho_list
 
+    """
+    this is basically getAllPeople, with one line changed:
+    - call getAuthorsOfCulturalHeritageObject(objectId) instead of getAllPeople
+    this method is supposed to return a list of Person objects, nice to see the list comprehension, but it would return a list of one author name as a string
+    """
     def getAuthorsOfCulturalHeritageObject(self, cho_df, objectId: str) -> list[impl.Person]:  # Iheb
         cho_list = self.createObjectList()
         author_list = [author for obj in cho_list if obj.id == objectId for author in obj.author]
         return author_list
-    
+
+    """
+    this is basically getAllCulturalHeritageObjects with one line changed:
+    - call getCulturalHeritageObjectsAuthoredBy(AuthorId) instead of getAllCulturalHeritageObjects()
+    """
     def getCulturalHeritageObjectsAuthoredBy(self, cho_df, AuthorId: str) -> list[impl.CulturalHeritageObject]:  #Iheb
         cho_list = self.createObjectList()
         cho_authoredBy = []
@@ -291,24 +315,52 @@ class BasicMashup(object):  #Hubert
                     break
         return cho_authoredBy
 
-    def getAllActivities(self, df):  # Lucrezia
-        return self.createActivityList(df)
-    
+    """
+    activities methods are basically all the same so I think it's only necessary to describe one:
+    - we initialise a list of activities as an empty list and write a return statement at the end of the function
+    - this class has an attribute processQuery, which is acting as a list of ProcessDataQueryHandler objects
+    - so, don't pass the dataframes as attributes in this function, check if there are handlers in that list
+    - if so, call an appropriate self.processQuery[0] method, like getAllActivities here (the functions from this class all have a corresponding function with the same name in the QueryHandlers)
+    - then call self.CreateActivityList() using the dataframe you got from the previous step
+    """
+    def getAllActivities(self):
+        activities = []
+        if len(self.processQuery) > 0:
+            activities_df = self.processQuery[0].getAllActivities();
+            activities = self.createActivityList(activities_df);
+        return activities;
+
+    """
+    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
+    use filtering in SQL
+    """
     def getActivitiesByResponsibleInstitution(self, df, partialName: str) -> list[impl.Activity]:  # Giorgia
         activities = self.createActivityList(df)
         resp_inst_filtered_activities = [activity for activity in activities if partialName in activity.responsible_institution]
         return resp_inst_filtered_activities
-    
+
+    """
+    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
+    use filtering in SQL
+    """
     def getActivitiesByResponsiblePerson(self, df, partialName: str) -> list[impl.Activity]:  # Giorgia
         activities = self.createActivityList(df)
         resp_pers_filtered_activities = [activity for activity in activities if partialName in activity.responsible_person]
         return resp_pers_filtered_activities
-        
+
+    """
+    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
+    use filtering in SQL
+    """
     def getActivitiesUsingTool(self, df, partial_name: str):  # Lucrezia
         activities = self.createActivityList(df)
         filtered_activities = [activity for activity in activities if partial_name in impl.Activity.getTools()]
         return filtered_activities
-    
+
+    """
+    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
+    use filtering in SQL
+    """
     def getActivitiesStartedAfter(self, df, date: str) -> list[impl.Activity]:  # Giorgia
         start_date = datetime.strptime(date, "%Y-%m-%d")   # from date to a datetime obj (I am unsure about the "%Y-%m-%d")
 
@@ -317,6 +369,10 @@ class BasicMashup(object):  #Hubert
         
         return after_date_filtered_activities
 
+    """
+    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
+    use filtering in SQL
+    """
     def getActivitiesEndedBefore(self, df, date: str) -> list[impl.Activity]: #Giorgia
         end_date = datetime.strptime(date, "%Y-%m-%d")   # from date to a datetime obj
 
@@ -325,6 +381,10 @@ class BasicMashup(object):  #Hubert
         
         return before_date_filtered_activities
 
+    """
+    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
+    use filtering in SQL
+    """
     def getAcquisitionsByTechnique(self, df, technique: str) -> list[impl.Acquisition]: #Giorgia
         activities = self.createActivityList(df)
         matching_acquisitions = [activity for activity in activities if isinstance(activity, impl.Acquisition) and technique in activity.technique] #only matching activities and technique: is activity an instance of class impl.Acquisition and is technique a substring of activity.technique
