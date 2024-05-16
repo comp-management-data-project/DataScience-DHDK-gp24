@@ -220,16 +220,28 @@ class MetadataQueryHandler(impl.QueryHandler):
             }
             """
         return self.executeQuery(query)
+    
+    def getAuthorsOfCulturalHeritageObject(self, object_id: str) -> pd.DataFrame:
+        query = """
+            SELECT ?authorId ?authorName
+            WHERE {
+            ?object_id schema:author ?authorId . 
+            ?authorId schema:name ?authorName .
+            }
+        """
+        return self.executeQuery(query)
+      #should object_id be <%s>?
 
-    def getAuthorsOfCulturalHeritageObject(self, objectid, AuthorsOfCulturalHeritageObject):
-        AuthorsOfCulturalHeritageObject = pd.read_csv("meta.csv")
-        Authorid = AuthorsOfCulturalHeritageObject[AuthorsOfCulturalHeritageObject["objectid"] == objectid]
-        return Authorid
-
-    def getCulturalHeritageObjectsAuthoredBy(self, personid, CulturalHeritageObjectsAuthoredBy):
-        CulturalHeritageObjectsAuthoredBy = pd.read_csv("meta.csv")
-        AuthoredBy = CulturalHeritageObjectsAuthoredBy[getAuthorsOfCulturalHeritageObjects(input_id)] == [input_id, CulturalHeritageObjectsAuthoredBy]
-        return AuthoredBy
+    def getCulturalHeritageObjectsAuthoredBy(self, personId):
+        query = """
+          SELECT ?objectId ?objectName
+          WHERE {
+             ?objectId schema:author ?personId .
+             ?objectId schema:name ?objectName .
+             FILTER (?author = "personId"^^xsd:string)
+            }
+            """
+        return self.executeQuery(query)
 
     # helper method to reduce code clutter
     def execute_query(self, query): 
