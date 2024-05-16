@@ -272,13 +272,23 @@ class BasicMashup(object):  #Hubert
             return None
 
     def getAllCulturalHeritageObjects(self) -> list[impl.CulturalHeritageObject]:  #
-        pass
+       cho_list =  self.createObjectList()
+       return cho_list
 
     def getAuthorsOfCulturalHeritageObject(self, objectId: str) -> list[impl.Person]:  # 
-        pass
+        cho_list = self.createObjectList()
+        author_list = [author for obj in cho_list if obj.id == objectId for author in obj.author]
+        return author_list
     
     def getCulturalHeritageObjectsAuthoredBy(self, AuthorId: str) -> list[impl.CulturalHeritageObject]:  #
-        pass
+        cho_list = self.createObjectList()
+        cho_authoredBy = []
+        for obj in cho_list:
+            for author in obj.author:
+                if AuthorId.lower() in author.name.lower():
+                    cho_authoredBy.append((obj, obj.title))
+                    break
+        return cho_authoredBy
 
     def getAllActivities(self, df):  # Lucrezia
         return self.createActivityList(df)
