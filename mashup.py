@@ -261,7 +261,15 @@ class BasicMashup(object):  #Hubert
         return cho_list;
 
     def getEntityById(self, entity_id: str) -> impl.IdentifiableEntity | None:  #
-        pass
+        cho_df = []
+        entity_list = []
+        for entity in self.createObjectList(cho_df):
+            if entity.id == entity_id:
+                entity_list.append(entity)  
+        if entity_list:
+            return entity_list  
+        else: 
+            return None
 
     def getAllCulturalHeritageObjects(self) -> list[impl.CulturalHeritageObject]:  #
         pass

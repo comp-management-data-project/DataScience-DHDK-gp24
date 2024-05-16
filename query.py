@@ -196,14 +196,30 @@ class ProcessDataQueryHandler(Handler):
 class MetadataQueryHandler(impl.QueryHandler):
     def __init__(self, getById):
         self.getById = getById
-    def getAllPeople(self, Allpeople):
-        Allpeople_csv = self.getById("Author")
-        Allpeople = pd.DataFrame(Allpeople_csv)
-        return Allpeople
+    def getAllPeople(self):
+        query = """
+            SELECT DISTINCT ?person ?personName
+            WHERE {
+            {
+                ?item schema:author ?person .
+            }   UNION {
+                ?item schema:copyrightHolder ?person .
+            }
+                ?person schema:name ?personName .
+            }
+            """
+        return self.executeQuery(query)
 
-    def getAllCulturalHeritageObjects(self, HeritageObjects):
-        HeritageObjects = pd.read_csv("meta.csv")
-        return HeritageObjects
+    def getAllCulturalHeritageObjects(self):
+        query = """
+            SELECT DISTINCT ?object ?objectName
+            WHERE {
+                ?object a ?type ;
+                schema:name ?objectName .
+                FILTER(REGEX(STR(?type), "http://dbpedia.org/resource"))
+            }
+            """
+        return self.executeQuery(query)
 
     def getAuthorsOfCulturalHeritageObject(self, objectid, AuthorsOfCulturalHeritageObject):
         AuthorsOfCulturalHeritageObject = pd.read_csv("meta.csv")
