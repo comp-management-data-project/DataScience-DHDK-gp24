@@ -13,6 +13,8 @@ import SPARQLWrapper;
 import pandas as pd
 from pandas import DataFrame, Series
 
+#datetime manipulation
+from datetime import datetime
 
 
 class BasicMashup(object):  #Hubert
