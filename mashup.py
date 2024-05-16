@@ -260,7 +260,7 @@ class BasicMashup(object):  #Hubert
                 cho_list.append(obj)
         return cho_list;
 
-    def getEntityById(self, entity_id: str) -> impl.IdentifiableEntity | None:  #
+    def getEntityById(self, entity_id: str) -> impl.IdentifiableEntity | None:  #Giorgia
         cho_df = []
         entity_list = []
         for entity in self.createObjectList(cho_df):
@@ -304,14 +304,28 @@ class BasicMashup(object):  #Hubert
         filtered_activities = [activity for activity in activities if partial_name in impl.Activity.getTools()]
         return filtered_activities
     
-    def getActivitiesStartedAfter(self, date: str) -> list[impl.Activity]:  # who
-        pass
+    def getActivitiesStartedAfter(self, date: str) -> list[impl.Activity]:  # Giorgia
+        start_date = datetime.strptime(date, "%Y-%m-%d")   # from date to a datetime obj (I am unsure about the "%Y-%m-%d")
 
-    def getActivitiesEndedBefore(self, date: str) -> list[impl.Activity]:  # 
-        pass
+        activities = self.createActivityList(df) #activities list from df
+        after_date_filtered_activities = [activity for activity in activities if datetime.strptime(activity.start_date, "%Y-%m-%d") >= start_date] #grab only activities after specific date 
+        
+        return after_date_filtered_activities
 
-    def getAcquisitionsByTechnique(self, partialName: str) -> list[impl.Acquisition]:  #
-        pass
+    def getActivitiesEndedBefore(self, date: str) -> list[impl.Activity]: #Giorgia
+        end_date = datetime.strptime(date, "%Y-%m-%d")   # from date to a datetime obj
+
+        activities = self.createActivityList(df) #activities list from df
+        before_date_filtered_activities = [activity for activity in activities if datetime.strptime(activity.end_date, "%Y-%m-%d") <= end_date] #grab only activities before specific date 
+        
+        return before_date_filtered_activities
+
+    def getAcquisitionsByTechnique(self, technique: str) -> list[impl.Acquisition]: #Giorgia
+    activities = self.createActivityList(df)
+    
+    matching_acquisitions = [activity for activity in activities if isinstance(activity, impl.Acquisition) and technique in activity.technique] #only matching activities and technique: is activity an instance of class impl.Acquisition and is technique a substring of activity.technique
+    
+    return matching_acquisitions
 
 class AdvancedMashup(BasicMashup):
     def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]:  #
