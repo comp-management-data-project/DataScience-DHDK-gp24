@@ -178,6 +178,10 @@ class ProcessDataQueryHandler(Handler):
         """
         return self.executeQuery(sql_command)
 
+    """
+    you should add an additional filter here checking whether an activity is an acquisition
+    eg. Activity_internal_id LIKE '%Acquisition%'
+    """
     def getAcquisitionsByTechnique(self, partialName: str) -> DataFrame:
         sql_command = """
         SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
@@ -196,6 +200,12 @@ class ProcessDataQueryHandler(Handler):
 class MetadataQueryHandler(impl.QueryHandler):
     def __init__(self, getById):
         self.getById = getById
+
+    """I mentioned the need to implement getById in this Handler, can add mine if you want to"""
+    
+    """
+    is the copyrightHolder here the predicate for the Owner column in the CSV? there's no people there, only institutions
+    """
     def getAllPeople(self):
         query = """
             SELECT DISTINCT ?person ?personName
@@ -210,6 +220,10 @@ class MetadataQueryHandler(impl.QueryHandler):
             """
         return self.executeQuery(query)
 
+    """
+    it's a start, but this has to return basically all the information from the graph
+    so you need to specify basically all subject-predicate-object triples in where and return in SELECT
+    """
     def getAllCulturalHeritageObjects(self):
         query = """
             SELECT DISTINCT ?object ?objectName
@@ -230,8 +244,10 @@ class MetadataQueryHandler(impl.QueryHandler):
             }
         """
         return self.executeQuery(query)
-      #should object_id be <%s>?
+      #should object_id be <%s>? 
+        """yes, otherwise looks fine"""
 
+    """as above, needs '%s' in place of "personId" and % personId at the end of the string"""
     def getCulturalHeritageObjectsAuthoredBy(self, personId):
         query = """
           SELECT ?objectId ?objectName
@@ -264,5 +280,3 @@ class MetadataQueryHandler(impl.QueryHandler):
             df.loc[len(df)] = row_dict;
             df = df.reset_index(drop=True);
         return df;
-
-    # UML methods go here
