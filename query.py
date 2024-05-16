@@ -235,20 +235,20 @@ class MetadataQueryHandler(impl.QueryHandler):
             """
         return self.executeQuery(query)
     
-    def getAuthorsOfCulturalHeritageObject(self, object_id: str) -> pd.DataFrame:
+    def getAuthorsOfCulturalHeritageObject(self, object_id: str) -> pd.DataFrame: #Giorgia
         query = """
             SELECT ?authorId ?authorName
             WHERE {
-            ?object_id schema:author ?authorId . 
+            <%s> schema:author ?authorId . 
             ?authorId schema:name ?authorName .
             }
-        """
+        """% objectId
         return self.executeQuery(query)
       #should object_id be <%s>? 
         """yes, otherwise looks fine"""
 
     """as above, needs '%s' in place of "personId" and % personId at the end of the string"""
-    def getCulturalHeritageObjectsAuthoredBy(self, personId):
+    def getCulturalHeritageObjectsAuthoredBy(self, personId): #Giorgia
         query = """
           SELECT ?objectId ?objectName
           WHERE {
@@ -256,7 +256,7 @@ class MetadataQueryHandler(impl.QueryHandler):
              ?objectId schema:name ?objectName .
              FILTER (?author = "personId"^^xsd:string)
             }
-            """
+            """% personId
         return self.executeQuery(query)
 
     # helper method to reduce code clutter
