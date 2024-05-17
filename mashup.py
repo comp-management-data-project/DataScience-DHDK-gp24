@@ -274,7 +274,7 @@ class BasicMashup(object):  #Hubert
         if len(self.metadataQuery) > 0:
             person_df = self.metadataQuery[0].getAllPeople();
             for idx, row in person_df.iterrows():
-                person = Person(row["id"], row["name"]);
+                person = impl.Person(row["id"], row["name"]);
                 person_list.append(person);
         return person_list;
     
@@ -287,8 +287,11 @@ class BasicMashup(object):  #Hubert
     - these two lines should be a part of an if statement checking if the list of metadata handlers is not empty: if self.metadataQuery:
     (take a look at getAllActivities)
     """
-    def getAllCulturalHeritageObjects(self, cho_df) -> list[impl.CulturalHeritageObject]:  #Iheb
-       cho_list =  self.createObjectList()
+    def getAllCulturalHeritageObjects(self) -> list[impl.CulturalHeritageObject]:  #Iheb
+       cho_list = []
+       if len(self.metadataQuery) > 0:
+        cho_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
+        cho_list =  self.createObjectList(cho_df)
        return cho_list
 
     """
@@ -296,24 +299,30 @@ class BasicMashup(object):  #Hubert
     - call getAuthorsOfCulturalHeritageObject(objectId) instead of getAllPeople
     this method is supposed to return a list of Person objects, nice to see the list comprehension, but it would return a list of one author name as a string
     """
-    def getAuthorsOfCulturalHeritageObject(self, cho_df, objectId: str) -> list[impl.Person]:  # Iheb
-        cho_list = self.createObjectList()
-        author_list = [author for obj in cho_list if obj.id == objectId for author in obj.author]
+
+    def getAuthorsOfCulturalHeritageObject(self, objectId: str) -> list[impl.Person]:
+        author_list = []
+        if len(self.metadataQuery) > 0:
+            author_df = self.metadataQuery[0].getAuthorsOfCulturalHeritageObject(objectId)
+            for idx, row in author_df.iterrows():
+                person = impl.Person(row["id"], row["name"])
+                author_list.append(person)
         return author_list
+
+
 
     """
     this is basically getAllCulturalHeritageObjects with one line changed:
     - call getCulturalHeritageObjectsAuthoredBy(AuthorId) instead of getAllCulturalHeritageObjects()
     """
-    def getCulturalHeritageObjectsAuthoredBy(self, cho_df, AuthorId: str) -> list[impl.CulturalHeritageObject]:  #Iheb
-        cho_list = self.createObjectList()
-        cho_authoredBy = []
-        for obj in cho_list:
-            for author in obj.author:
-                if AuthorId.lower() in author.name.lower():
-                    cho_authoredBy.append((obj, obj.title))
-                    break
-        return cho_authoredBy
+    def getCulturalHeritageObjectsAuthoredBy(self, AuthorId: str) -> list[impl.CulturalHeritageObject]:  #Iheb
+       cho_list = []
+       if len(self.metadataQuery) > 0:
+        cho_df = self.metadataQuery[0].getCulturalHeritageObjectsAuthoredBy(AuthorId)
+        cho_list =  self.createObjectList(cho_df)
+        return cho_list
+
+
 
     """
     activities methods are basically all the same so I think it's only necessary to describe one:
@@ -397,8 +406,8 @@ class AdvancedMashup(BasicMashup):
     def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
         pass
 
-    def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
+    def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #iheb
         pass
 
-    def getAuthorsOfObjectsAcquiredInTimeFrame(self, start: str, end: str) -> list[impl.Person]:  # 
+    def getAuthorsOfObjectsAcquiredInTimeFrame(self, start: str, end: str) -> list[impl.Person]:  #iheb
         pass

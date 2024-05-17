@@ -201,6 +201,11 @@ class MetadataQueryHandler(impl.QueryHandler):
     def __init__(self, getById):
         self.getById = getById
 
+    def getById(self, id):
+        idDataFrame = idDataFrame["id"]
+        self.getById = idDataFrame
+        return self.getById
+
     """I mentioned the need to implement getById in this Handler, can add mine if you want to"""
     
     """
@@ -208,13 +213,10 @@ class MetadataQueryHandler(impl.QueryHandler):
     """
     def getAllPeople(self):
         query = """
-            SELECT DISTINCT ?person ?personName
+            SELECT DISTINCT ?personId ?personName
             WHERE {
-            {
                 ?item schema:author ?person .
-            }   UNION {
-                ?item schema:copyrightHolder ?person .
-            }
+                ?person schema:identifier ?personId .
                 ?person schema:name ?personName .
             }
             """
@@ -226,7 +228,7 @@ class MetadataQueryHandler(impl.QueryHandler):
     """
     def getAllCulturalHeritageObjects(self):
         query = """
-            SELECT DISTINCT ?object ?objectName
+            SELECT DISTINCT ?object ?objectName #add all (type, id, )
             WHERE {
                 ?object a ?type ;
                 schema:name ?objectName .
@@ -239,10 +241,19 @@ class MetadataQueryHandler(impl.QueryHandler):
         query = """
             SELECT ?authorId ?authorName
             WHERE {
+<<<<<<< Updated upstream
             <%s> schema:author ?authorId . 
             ?authorId schema:name ?authorName .
             }
         """% objectId
+=======
+                ?item schema:identifier %s .
+                ?item schema:author ?person .
+                ?person schema:identifier ?personId .
+                ?person schema:name ?personName .
+            }
+        """ % object_id
+>>>>>>> Stashed changes
         return self.executeQuery(query)
       #should object_id be <%s>? 
         """yes, otherwise looks fine"""
@@ -252,11 +263,15 @@ class MetadataQueryHandler(impl.QueryHandler):
         query = """
           SELECT ?objectId ?objectName
           WHERE {
-             ?objectId schema:author ?personId .
+             ?objectId schema:author %s .
              ?objectId schema:name ?objectName .
              FILTER (?author = "personId"^^xsd:string)
             }
+<<<<<<< Updated upstream
             """% personId
+=======
+            """ % personId
+>>>>>>> Stashed changes
         return self.executeQuery(query)
 
     # helper method to reduce code clutter
