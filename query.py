@@ -241,19 +241,10 @@ class MetadataQueryHandler(impl.QueryHandler):
         query = """
             SELECT ?authorId ?authorName
             WHERE {
-<<<<<<< Updated upstream
             <%s> schema:author ?authorId . 
             ?authorId schema:name ?authorName .
             }
         """% objectId
-=======
-                ?item schema:identifier %s .
-                ?item schema:author ?person .
-                ?person schema:identifier ?personId .
-                ?person schema:name ?personName .
-            }
-        """ % object_id
->>>>>>> Stashed changes
         return self.executeQuery(query)
       #should object_id be <%s>? 
         """yes, otherwise looks fine"""
@@ -267,11 +258,7 @@ class MetadataQueryHandler(impl.QueryHandler):
              ?objectId schema:name ?objectName .
              FILTER (?author = "personId"^^xsd:string)
             }
-<<<<<<< Updated upstream
             """% personId
-=======
-            """ % personId
->>>>>>> Stashed changes
         return self.executeQuery(query)
 
     # helper method to reduce code clutter
