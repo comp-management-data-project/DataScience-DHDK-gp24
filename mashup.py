@@ -343,117 +343,65 @@ class BasicMashup(object):  #Hubert
     basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
     use filtering in SQL
     """
-    #like this????? I
-    def getActivitiesByResponsibleInstitution(self, partialName: str) -> list[impl.Activity]:
-        activities = []  
-        if len(self.processQuery) > 0:  # check handlers 
-            activities_df = self.processQuery[0].getResponsibleInstitute(partialName)  
-            activities = self.createActivityList(activities_df) 
-        return activities  
+    def getActivitiesByResponsibleInstitution(self, partialName: str) -> list[impl.Activity]: # Giorgia
+        activities = []
+        if len(self.processQuery) > 0:
+            activities_df = self.processQuery[0].getActivitiesByResponsibleInstitution();
+            activities = self.createActivityList(activities_df);
+        return activities;
 
-    """
-    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
-    use filtering in SQL
-    """
-    def getActivitiesByResponsiblePerson(self, df, partialName: str) -> list[impl.Activity]:  # Giorgia
-        activities = self.createActivityList(df)
-        resp_pers_filtered_activities = [activity for activity in activities if partialName in activity.responsible_person]
-        return resp_pers_filtered_activities
+    def getActivitiesByResponsiblePerson(self, partialName: str) -> list[impl.Activity]:  # Giorgia
+        activities = []
+        if len(self.processQuery) > 0:
+            activities_df = self.processQuery[0].getActivitiesByResponsiblePerson();
+            activities = self.createActivityList(activities_df);
+        return activities;
 
-    """
-    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
-    use filtering in SQL
-    """
-    def getActivitiesUsingTool(self, df, partial_name: str):  # Lucrezia
-        activities = self.createActivityList(df)
-        filtered_activities = [activity for activity in activities if partial_name in impl.Activity.getTools()]
-        return filtered_activities
+    def getActivitiesUsingTool(self, partial_name: str):  # Giorgia
+        activities = []
+        if len(self.processQuery) > 0:
+            activities_df = self.processQuery[0].getActivitiesUsingTool();
+            activities = self.createActivityList(activities_df);
+        return activities;
+    
+    def getActivitiesStartedAfter(self, date: str) -> list[impl.Activity]:  # Giorgia
+        activities = []
+        if len(self.processQuery) > 0:
+            activities_df = self.processQuery[0].getActivitiesStartedAfter();
+            activities = self.createActivityList(activities_df);
+        return activities;
 
-    """
-    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
-    use filtering in SQL
-    """
-    def getActivitiesStartedAfter(self, df, date: str) -> list[impl.Activity]:  # Giorgia
-        start_date = datetime.strptime(date, "%Y-%m-%d")   # from date to a datetime obj (I am unsure about the "%Y-%m-%d")
+    def getActivitiesEndedBefore(self, date: str) -> list[impl.Activity]:  # 
+        activities = []
+        if len(self.processQuery) > 0:
+            activities_df = self.processQuery[0].getActivitiesEndedBefore();
+            activities = self.createActivityList(activities_df);
+        return activities;
 
-        activities = self.createActivityList(df) #activities list from df
-        after_date_filtered_activities = [activity for activity in activities if datetime.strptime(activity.start_date, "%Y-%m-%d") >= start_date] #grab only activities after specific date 
-        
-        return after_date_filtered_activities
-
-    """
-    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
-    use filtering in SQL
-    """
-    def getActivitiesEndedBefore(self, df, date: str) -> list[impl.Activity]: #Giorgia
-        end_date = datetime.strptime(date, "%Y-%m-%d")   # from date to a datetime obj
-
-        activities = self.createActivityList(df) #activities list from df
-        before_date_filtered_activities = [activity for activity in activities if datetime.strptime(activity.end_date, "%Y-%m-%d") <= end_date] #grab only activities before specific date 
-        
-        return before_date_filtered_activities
-
-    """
-    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
-    use filtering in SQL
-    """
-    def getAcquisitionsByTechnique(self, df, technique: str) -> list[impl.Acquisition]: #Giorgia
-        activities = self.createActivityList(df)
-        matching_acquisitions = [activity for activity in activities if isinstance(activity, impl.Acquisition) and technique in activity.technique] #only matching activities and technique: is activity an instance of class impl.Acquisition and is technique a substring of activity.technique
-        return matching_acquisitions
+    def getAcquisitionsByTechnique(self, partialName: str) -> list[impl.Acquisition]:  #
+        activities = []
+        if len(self.processQuery) > 0:
+            activities_df = self.processQuery[0].getAcquisitionsByTechnique();
+            activities = self.createActivityList(activities_df);
+        return activities;
 
 class AdvancedMashup(BasicMashup):
-    #I've written two things; I don't really know if either of them are correct to be honest 
-    def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]: #fairly sure it's wrong
-        activities = []
-        if len(self.processQuery) > 0:  # Check for handlers
-            activities_df = self.processQuery[0].getActivitiesOnObjectsAuthoredBy(personId)  # Activities with the same author
-
-            for idx, row in activities_df.iterrows():
-                # Determine the class based on the row information (e.g., type of activity)
-                if row['ActivityType'] == 'Acquisition':
-                    activity = impl.Acquisition(
-                        refers_to_cho=self.getEntityById(row['id']),  
-                        institute=row['Responsible Institute'],
-                        person=row['Responsible Person'],
-                        start=row['Start Date'],
-                        end=row['End Date'],
-                        technique=row['Technique'],
-                        
-                    )
-                elif: 
-                # all the other types in activities
-                else:
-                    activity = impl.Activity(
-                        row['Activity_internal_id'],
-                        row['Refers To'],
-                        row['Responsible Institute'],
-                        row['Responsible Person'],
-                        row['Technique'],
-                        row['Start Date'],
-                        row['End Date']
-                    )
-
-                activities.append(activity)
-
-        return activities
-
-'''option 2
-        def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]:
-                activities_on_objects = []
-                
-                if self.metadataQuery:
-                    # cho with same author 
-                    cho_df = self.metadataQuery[0].getCulturalHeritageObjectsAuthoredBy(personId)
-                    cho_list = self.createObjectList(cho_df)
-                    
-                    if self.processQuery:
-                        # activities for each cho
-                        for cho in cho_list:
-                            activities_df = self.processQuery[0].getActivitiesByObjectId(cho.getId())
-                            activities_on_objects.extend(self.createActivityList(activities_df))
-                
-                return activities_on_objects'''
+    def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]:
+        activities = []  
+        
+        cho_list = self.getAllCulturalHeritageObjects()
+        filt_cho = []
+        for item in cho_list:
+            person = item.getAuthors()
+            person_id = person.id
+            if person_id == personId and item not in filt_cho:
+                filt_cho.append(item)
+       
+        activities_list = self.getAllActivities()
+        for item in activities_list: 
+            if item.refersTo_cho in filt_cho:
+                activities.append(item)
+        return activities 
 
     def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
         pass
