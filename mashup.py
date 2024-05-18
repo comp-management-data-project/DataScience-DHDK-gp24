@@ -403,6 +403,7 @@ class BasicMashup(object):  #Hubert
         return matching_acquisitions
 
 class AdvancedMashup(BasicMashup):
+    #I've written two things; I don't really know if either of them are correct to be honest 
     def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]: #fairly sure it's wrong
         activities = []
         if len(self.processQuery) > 0:  # Check for handlers
@@ -437,7 +438,22 @@ class AdvancedMashup(BasicMashup):
 
         return activities
 
-
+'''option 2
+        def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]:
+                activities_on_objects = []
+                
+                if self.metadataQuery:
+                    # cho with same author 
+                    cho_df = self.metadataQuery[0].getCulturalHeritageObjectsAuthoredBy(personId)
+                    cho_list = self.createObjectList(cho_df)
+                    
+                    if self.processQuery:
+                        # activities for each cho
+                        for cho in cho_list:
+                            activities_df = self.processQuery[0].getActivitiesByObjectId(cho.getId())
+                            activities_on_objects.extend(self.createActivityList(activities_df))
+                
+                return activities_on_objects'''
 
     def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
         pass
