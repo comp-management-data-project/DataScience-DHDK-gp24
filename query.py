@@ -228,11 +228,16 @@ class MetadataQueryHandler(impl.QueryHandler):
     """
     def getAllCulturalHeritageObjects(self):
         query = """
-            SELECT DISTINCT ?object ?objectName #add all (type, id, )
+            SELECT DISTINCT ?Id ?Type ?Title ?Date ?AuthorName ?AuthorId ?Owner ?Place
             WHERE {
-                ?object a ?type ;
-                schema:name ?objectName .
+                ?type a schema:type ;
                 FILTER(REGEX(STR(?type), "http://dbpedia.org/resource"))
+                ?type a ?https://comp-data.github.io/res/
+                
+            OPTIONAL {
+                ?person ?schema:name ?AuthorName
+                ?person ?schema:identifier ?AuthorId
+            }
             }
             """
         return self.executeQuery(query)
@@ -241,10 +246,12 @@ class MetadataQueryHandler(impl.QueryHandler):
         query = """
             SELECT ?authorId ?authorName
             WHERE {
-            <%s> schema:author ?authorId . 
-            ?authorId schema:name ?authorName .
+                ?item schema:identifier %s .
+                ?item schema:author ?person .
+                ?person schema:identifier ?personId .
+                ?person schema:name ?personName .
             }
-        """% objectId
+        """ % object_id
         return self.executeQuery(query)
       #should object_id be <%s>? 
         """yes, otherwise looks fine"""
@@ -258,7 +265,7 @@ class MetadataQueryHandler(impl.QueryHandler):
              ?objectId schema:name ?objectName .
              FILTER (?author = "personId"^^xsd:string)
             }
-            """% personId
+            """ % personId
         return self.executeQuery(query)
 
     # helper method to reduce code clutter

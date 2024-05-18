@@ -458,8 +458,32 @@ class AdvancedMashup(BasicMashup):
     def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
         pass
 
-    def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #iheb
-        pass
+    def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
+        Objects = []
+        if len(self.processQuery) > 0:
+            institutions_df = self.processQuery[0].getActivitiesByResponsibleInstitution(partialName)
+            activities = self.createActivityList(institutions_df)
+            if len(self.metadataQuery) > 0:
+                objects_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
+                object_list = self.createObjectList(objects_df)
+                object_ids = []
+                for activity in activities:
+                    activity_id =activity.refersTo_cho.id
+                    if activity_id not in object_ids:
+                        object_ids.append(activity_id)
+                        Objects.append(object)
+        return Objects
 
-    def getAuthorsOfObjectsAcquiredInTimeFrame(self, start: str, end: str) -> list[impl.Person]:  #iheb
-        pass
+    def getAuthorsOfObjectsAcquiredInTimeFrame(self, start: str, end: str) -> list[impl.Person]:  # 
+        Objects = []
+        if len(self.processQuery) > 0:
+            institutions_df_end = self.getActivitiesEndedBefore(end)
+            institutions_df_start = self.getActivitiesStartedAfter(start)
+            activities_df = pd.merge(institutions_df_start, institutions_df_end, how="inner", on=["Activity_internal_id"])
+            activity_list = self.createActivityList(activities_df)
+            
+            for activity in activity_list:
+                if activity.refersTo_cho.person[0]  and activity.refersTo_cho.person[0] not in Objects: 
+                    author = activity.refersTo_cho.person[0]    
+                    Objects.append(author)
+        return Objects
