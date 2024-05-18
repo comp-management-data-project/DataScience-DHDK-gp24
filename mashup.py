@@ -343,10 +343,13 @@ class BasicMashup(object):  #Hubert
     basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
     use filtering in SQL
     """
-    def getActivitiesByResponsibleInstitution(self, df, partialName: str) -> list[impl.Activity]:  # Giorgia
-        activities = self.createActivityList(df)
-        resp_inst_filtered_activities = [activity for activity in activities if partialName in activity.responsible_institution]
-        return resp_inst_filtered_activities
+    #like this????? I
+    def getActivitiesByResponsibleInstitution(self, partialName: str) -> list[impl.Activity]:
+        activities = []  
+        if len(self.processQuery) > 0:  # check handlers 
+            activities_df = self.processQuery[0].getResponsibleInstitute(partialName)  
+            activities = self.createActivityList(activities_df) 
+        return activities  
 
     """
     basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
@@ -400,8 +403,41 @@ class BasicMashup(object):  #Hubert
         return matching_acquisitions
 
 class AdvancedMashup(BasicMashup):
-    def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]:  #
-        pass
+    def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]: #fairly sure it's wrong
+        activities = []
+        if len(self.processQuery) > 0:  # Check for handlers
+            activities_df = self.processQuery[0].getActivitiesOnObjectsAuthoredBy(personId)  # Activities with the same author
+
+            for idx, row in activities_df.iterrows():
+                # Determine the class based on the row information (e.g., type of activity)
+                if row['ActivityType'] == 'Acquisition':
+                    activity = impl.Acquisition(
+                        refers_to_cho=self.getEntityById(row['id']),  
+                        institute=row['Responsible Institute'],
+                        person=row['Responsible Person'],
+                        start=row['Start Date'],
+                        end=row['End Date'],
+                        technique=row['Technique'],
+                        
+                    )
+                elif: 
+                # all the other types in activities
+                else:
+                    activity = impl.Activity(
+                        row['Activity_internal_id'],
+                        row['Refers To'],
+                        row['Responsible Institute'],
+                        row['Responsible Person'],
+                        row['Technique'],
+                        row['Start Date'],
+                        row['End Date']
+                    )
+
+                activities.append(activity)
+
+        return activities
+
+
 
     def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
         pass
