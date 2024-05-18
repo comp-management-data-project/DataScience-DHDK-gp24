@@ -256,15 +256,28 @@ class BasicMashup(object):  #Hubert
     - also beforehand check if there are any handlers actually in the list like if self.metadataQuery: 
     - then you'll have to check if the dataframe has a cultural heritage objects or a person
     """
+
+    '''HAS TO BE CHANGED'''
     def getEntityById(self, cho_df, entity_id: str) -> impl.IdentifiableEntity | None:  #Giorgia
-        entity_list = []
-        for entity in self.createObjectList(cho_df):
-            if entity.id == entity_id:
-                entity_list.append((entity, obj))
-        if entity_list:
-            return entity_list  
-        else: 
-            return None
+        if not self.metadataQuery:
+        return None
+    
+        handler = self.metadataQuery[0]
+    
+        cho_df = handler.getCulturalHeritageObjectById(entity_id)    # find object by Id
+        if not cho_df.empty:
+            entities = self.createObjectList(cho_df)
+            for entity in entities:
+                if entity.id == entity_id:
+                    return entity
+        
+        person_df = handler.getById(entity_id) # find author by id
+        if not person_df.empty:
+            for idx, row in person_df.iterrows():
+                if row["id"] == entity_id:
+                    return impl.Person(row["id"], row["name"])
+        
+        return None
 
     """
     I've added my getAllPeople() function, as it's a nice start for all the other functions of this class
@@ -386,7 +399,7 @@ class BasicMashup(object):  #Hubert
         return activities;
 
 class AdvancedMashup(BasicMashup):
-    def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]:
+    def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]: #Giorgia
         activities = []  
         
         cho_list = self.getAllCulturalHeritageObjects()
@@ -403,8 +416,21 @@ class AdvancedMashup(BasicMashup):
                 activities.append(item)
         return activities 
 
-    def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
-        pass
+    def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #giorgia
+        Objects = []
+        if len(self.processQuery) > 0:
+            institutions_df = self.processQuery[0].getActivitiesByResponsiblePerson(partialName)
+            activities = self.createActivityList(institutions_df)
+            if len(self.metadataQuery) > 0:
+                objects_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
+                object_list = self.createObjectList(objects_df)
+                object_ids = []
+                for activity in activities:
+                    activity_id =activity.refersTo_cho.id
+                    if activity_id not in object_ids:
+                        object_ids.append(activity_id)
+                        Objects.append(object)
+        return Objects
 
     def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #
         Objects = []
