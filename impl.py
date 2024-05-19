@@ -595,11 +595,14 @@ class MetadataQueryHandler(QueryHandler):
     def set_id_dataframe(self, dataframe):
         self.idDataFrame = dataframe
 
-    def getById(self, id: str):
-        if self.idDataFrame is None:
-            raise ValueError("idDataFrame is not set. Call set_id_dataframe first.")
-        id_value = self.idDataFrame["id"]
-        return id_value
+    def getById(self, id):
+        person_query = "SELECT DISTINCT ?uri ?name ?id WHERE { ?object <https://schema.org/author> ?uri.  ?uri <https://schema.org/name> ?name.  ?uri <https://schema.org/identifier> ?id. ?uri <https://schema.org/identifier> '%s'. }" % id;
+        object_query = "SELECT DISTINCT ?object ?id ?type ?title ?date ?owner ?place ?author ?author_name ?author_id WHERE { ?object <https://schema.org/identifier> ?id.  ?object <https://schema.org/identifier> '%s'. ?object <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type. ?object <https://schema.org/name> ?title. ?object <https://schema.org/dateCreated> ?date. ?object <https://schema.org/copyrightHolder> ?owner. ?object <https://schema.org/spatial> ?place. ?object <https://schema.org/author> ?author. ?author <https://schema.org/name> ?author_name. ?author <https://schema.org/identifier> ?author_id.}" % id;
+        person_df = self.execute_query(person_query);
+        object_df = self.execute_query(object_query);
+        if len(object_df.index) > 0: # if objects exist return objects
+            return object_df;
+        return person_df; # otherwise persons exists or we return an empty dataframe
     
     def execute_sparql_query(self, query):      # helper method
         sparql = SPARQLWrapper.SPARQLWrapper(self.dbPathOrUrl);
