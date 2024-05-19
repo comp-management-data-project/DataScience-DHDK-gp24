@@ -1,0 +1,316 @@
+@prefix schema: <https://schema.org/> .
+
+<https://comp-data.github.io/res/itemid-0> a <http://dbpedia.org/resource/Nautical_chart> ;
+    schema:author <https://comp-data.github.io/res/Person/500114874> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1482" ;
+    schema:identifier "1" ;
+    schema:name "Nautical chart" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-1> a <https://comp-data.github.io/res/Printed_volume> ;
+    schema:author <https://comp-data.github.io/res/Person/265397758> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1497" ;
+    schema:identifier "2" ;
+    schema:name "The History of Plants" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-10> a <http://dbpedia.org/resource/Specimen> ;
+    schema:copyrightHolder "Sistema Museale di Ateneo di Bologna" ;
+    schema:dateCreated "1758" ;
+    schema:identifier "11" ;
+    schema:name "Atlantic horseshoe crab (Linnaeus, 1758)" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-11> a <http://dbpedia.org/resource/Specimen> ;
+    schema:copyrightHolder "Sistema Museale di Ateneo di Bologna" ;
+    schema:dateCreated "1757" ;
+    schema:identifier "12" ;
+    schema:name "Armadillo (Linnaeus, 1757)" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-12> a <http://dbpedia.org/resource/Painting> ;
+    schema:author <https://comp-data.github.io/res/Person/500115349> ;
+    schema:copyrightHolder "Accademia Carrara" ;
+    schema:dateCreated "1582-1585" ;
+    schema:identifier "13" ;
+    schema:name "Portrait of Ulisse Aldrovandi" ;
+    schema:spatial "Bergamo" .
+
+<https://comp-data.github.io/res/itemid-13> a <http://dbpedia.org/resource/Printed_material> ;
+    schema:author <https://comp-data.github.io/res/Person/78822798> ;
+    schema:copyrightHolder "Biblioteca del Dipartimento di Scienze Biologiche, Geologiche e Ambientali, Bologna" ;
+    schema:dateCreated "1586" ;
+    schema:identifier "14" ;
+    schema:name "A highly useful compendium of plants" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-14> a <http://dbpedia.org/resource/Map> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1591" ;
+    schema:identifier "15" ;
+    schema:name "Map of the botanical garden in Padua" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-15> a <http://dbpedia.org/resource/Map> ;
+    schema:author <https://comp-data.github.io/res/Person/54929912> ;
+    schema:copyrightHolder "Orto Botanico ed Herbarium di Bologna" ;
+    schema:dateCreated "1753" ;
+    schema:identifier "16" ;
+    schema:name "Map of the botanical garden in Bologna" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-16> a <https://comp-data.github.io/res/Manuscript_volume> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "17" ;
+    schema:name "Sunflower" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-17> a <http://dbpedia.org/resource/Specimen> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "Orto Botanico ed Herbarium di Bologna" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "18" ;
+    schema:name "Stavesacre" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-18> a <http://dbpedia.org/resource/Specimen> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "Orto Botanico ed Herbarium di Bologna" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "19" ;
+    schema:name "Pheasant’s eye" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-19> a <http://dbpedia.org/resource/Specimen> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "Orto Botanico ed Herbarium di Bologna" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "20" ;
+    schema:name "Tomato" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-2> a <http://dbpedia.org/resource/Herbarium> ;
+    schema:author <https://comp-data.github.io/res/Person/78822798> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1523" ;
+    schema:identifier "3" ;
+    schema:name "On Medical Material" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-20> a <http://dbpedia.org/resource/Specimen> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "Orto Botanico ed Herbarium di Bologna" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "21" ;
+    schema:name "Mountain everlasting" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-21> a <http://dbpedia.org/resource/Specimen> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "Orto Botanico ed Herbarium di Bologna" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "22" ;
+    schema:name "Wild tulip" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-22> a <http://dbpedia.org/resource/Specimen> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "Orto Botanico ed Herbarium di Bologna" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "23" ;
+    schema:name "Mountain avens" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-23> a <http://dbpedia.org/resource/Printed_material> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1603" ;
+    schema:identifier "24" ;
+    schema:name "Anatomy of a chicken" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-24> a <https://comp-data.github.io/res/Manuscript_plate> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "25" ;
+    schema:name "Chick in an eggshell" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-25> a <http://dbpedia.org/resource/Printed_material> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1603" ;
+    schema:identifier "26" ;
+    schema:name "Dissected swan" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-26> a <https://comp-data.github.io/res/Manuscript_plate> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "27" ;
+    schema:name "Human hermaphrodite" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-27> a <http://dbpedia.org/resource/Specimen> ;
+    schema:copyrightHolder "Museo di Palazzo Poggi" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "28" ;
+    schema:name "Sea coconut" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-28> a <http://dbpedia.org/resource/Model> ;
+    schema:author <https://comp-data.github.io/res/Person/52741381> ;
+    schema:copyrightHolder "Museo di Storia Naturale di Verona" ;
+    schema:dateCreated "1600-1699" ;
+    schema:identifier "29" ;
+    schema:name "Basilisk" ;
+    schema:spatial "Verona" .
+
+<https://comp-data.github.io/res/itemid-29> a <https://comp-data.github.io/res/Printed_volume> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1642" ;
+    schema:identifier "30" ;
+    schema:name "Cyclops" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-3> a <https://comp-data.github.io/res/Printed_volume> ;
+    schema:author <https://comp-data.github.io/res/Person/100219162> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1519" ;
+    schema:identifier "4" ;
+    schema:name "The Natural History" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-30> a <http://dbpedia.org/resource/Model> ;
+    schema:author <https://comp-data.github.io/res/Person/263904234> ;
+    schema:copyrightHolder "Museo di Palazzo Poggi" ;
+    schema:dateCreated "1700-1799" ;
+    schema:identifier "31" ;
+    schema:name "Table with monocular model" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-31> a <https://comp-data.github.io/res/Manuscript_plate> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "32" ;
+    schema:name "Heads of a two-headed calf" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-32> a <http://dbpedia.org/resource/Specimen> ;
+    schema:copyrightHolder "Sistema Museale di Ateneo di Bologna" ;
+    schema:identifier "33" ;
+    schema:name "Cattle (Linnaeus, 1758)" ;
+    schema:spatial "Ozzano dell'Emilia" .
+
+<https://comp-data.github.io/res/itemid-33> a <http://dbpedia.org/resource/Specimen> ;
+    schema:copyrightHolder "Museo di Palazzo Poggi" ;
+    schema:dateCreated "1600-1699" ;
+    schema:identifier "34" ;
+    schema:name "Narwhal (Linnaeus, 1758)" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-34> a <https://comp-data.github.io/res/Manuscript_plate> ;
+    schema:author <https://comp-data.github.io/res/Person/100190422> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "35" ;
+    schema:name "Desert horned viper and vipera ammodytes" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-4> a <http://dbpedia.org/resource/Nautical_chart> ;
+    schema:author <https://comp-data.github.io/res/Person/500048088> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1500-1599" ;
+    schema:identifier "5" ;
+    schema:name "Incomplete coastal profile of the American continent" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-5> a <http://dbpedia.org/resource/Nautical_chart> ;
+    schema:author <https://comp-data.github.io/res/Person/68943129> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1556" ;
+    schema:identifier "6" ;
+    schema:name "Map of Cusco" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-6> a <https://comp-data.github.io/res/Printed_volume> ;
+    schema:author <https://comp-data.github.io/res/Person/68967770> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1530" ;
+    schema:identifier "7" ;
+    schema:name "On the New World" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-7> a <https://comp-data.github.io/res/Printed_volume> ;
+    schema:author <https://comp-data.github.io/res/Person/2465365> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1596" ;
+    schema:identifier "8" ;
+    schema:name "Natural and Moral History of the Indies" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-8> a <http://dbpedia.org/resource/Printed_material> ;
+    schema:author <https://comp-data.github.io/res/Person/100203985> ;
+    schema:copyrightHolder "BUB" ;
+    schema:dateCreated "1579" ;
+    schema:identifier "9" ;
+    schema:name "Tobacco" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/itemid-9> a <http://dbpedia.org/resource/Specimen> ;
+    schema:copyrightHolder "Sistema Museale di Ateneo di Bologna" ;
+    schema:dateCreated "1758" ;
+    schema:identifier "10" ;
+    schema:name "Jaguar (Linnaeus, 1758)" ;
+    schema:spatial "Bologna" .
+
+<https://comp-data.github.io/res/Person/100203985> schema:identifier "100203985" ;
+    schema:name "Monardes, Nicolás" .
+
+<https://comp-data.github.io/res/Person/100219162> schema:identifier "100219162" ;
+    schema:name "Plinius Secundus, Gaius" .
+
+<https://comp-data.github.io/res/Person/2465365> schema:identifier "2465365" ;
+    schema:name "Acosta, José de" .
+
+<https://comp-data.github.io/res/Person/263904234> schema:identifier "263904234" ;
+    schema:name "Riviera, Tarsizio" .
+
+<https://comp-data.github.io/res/Person/265397758> schema:identifier "265397758" ;
+    schema:name "Teofrasto" .
+
+<https://comp-data.github.io/res/Person/500048088> schema:identifier "500048088" ;
+    schema:name "Agnese, Battista" .
+
+<https://comp-data.github.io/res/Person/500114874> schema:identifier "500114874" ;
+    schema:name "Benincasa, Grazioso" .
+
+<https://comp-data.github.io/res/Person/500115349> schema:identifier "500115349" ;
+    schema:name "Carracci, Agostino" .
+
+<https://comp-data.github.io/res/Person/52741381> schema:identifier "52741381" ;
+    schema:name "Calzolari, Francesco" .
+
+<https://comp-data.github.io/res/Person/54929912> schema:identifier "54929912" ;
+    schema:name "Monti, Giuseppe" .
+
+<https://comp-data.github.io/res/Person/68943129> schema:identifier "68943129" ;
+    schema:name "Ramusio, Giovanni Battista" .
+
+<https://comp-data.github.io/res/Person/68967770> schema:identifier "68967770" ;
+    schema:name "Anghiera, Pietro Martire d'" .
+
+<https://comp-data.github.io/res/Person/78822798> schema:identifier "78822798" ;
+    schema:name "Dioscorides Pedanius" .
+
+<https://comp-data.github.io/res/Person/100190422> schema:identifier "100190422" ;
+    schema:name "Aldrovandi, Ulisse" .
+
