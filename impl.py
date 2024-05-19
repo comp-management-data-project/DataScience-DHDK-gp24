@@ -302,7 +302,13 @@ class ProcessDataUploadHandler(Handler):    # Lucrezia
 
 class MetadataUploadHandler(UploadHandler):     # Hubert
     def __init__(self, dbPathOrUrl):
-        self.dbPathOrUrl = "";
+        self.dbPathOrUrl = ""
+        self.getById = getById
+
+    def getById(self, id):
+        idDataFrame = idDataFrame["id"]
+        self.getById = idDataFrame
+        return self.getById
 
     def pushDataToDb(self, path):
         try:
@@ -638,24 +644,31 @@ class MetadataQueryHandler(QueryHandler):
 
     def getAllCulturalHeritageObjects(self):
         query = """
-            SELECT DISTINCT ?object ?objectName #add all (type, id, )
+            SELECT DISTINCT ?Id ?Type ?Title ?Date ?AuthorName ?AuthorId ?Owner ?Place
             WHERE {
-                ?object a ?type ;
-                schema:name ?objectName .
+                ?type a schema:type ;
                 FILTER(REGEX(STR(?type), "http://dbpedia.org/resource"))
+                ?type a ?https://comp-data.github.io/res/
+                
+            OPTIONAL {
+                ?person ?schema:name ?AuthorName
+                ?person ?schema:identifier ?AuthorId
+            }
             }
             """
-        return self.execute_sparql_query(query)
+        return self.executeQuery(query)
 
     def getAuthorsOfCulturalHeritageObject(self, object_id: str) -> pd.DataFrame:
         query = """
             SELECT ?authorId ?authorName
             WHERE {
-            <%s> schema:author ?authorId . 
-            ?authorId schema:name ?authorName .
+                ?item schema:identifier %s .
+                ?item schema:author ?person .
+                ?person schema:identifier ?personId .
+                ?person schema:name ?personName .
             }
         """ % object_id
-        return self.execute_sparql_query(query)
+        return self.executeQuery(query)
 
     def getCulturalHeritageObjectsAuthoredBy(self, personId): #Giorgia
         query = """
@@ -1126,8 +1139,32 @@ class AdvancedMashup(BasicMashup):
         pass
 
     def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[CulturalHeritageObject]:  # Iheb
-        pass
+        Objects = []
+        if len(self.processQuery) > 0:
+            institutions_df = self.processQuery[0].getActivitiesByResponsibleInstitution(partialName)
+            activities = self.createActivityList(institutions_df)
+            if len(self.metadataQuery) > 0:
+                objects_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
+                object_list = self.createObjectList(objects_df)
+                object_ids = []
+                for activity in activities:
+                    activity_id =activity.refersTo_cho.id
+                    if activity_id not in object_ids:
+                        object_ids.append(activity_id)
+                        Objects.append(object)
+        return Objects
 
     def getAuthorsOfObjectsAcquiredInTimeFrame(self, start: str, end: str) -> list[Person]:  # Iheb
-        pass
+        Objects = []
+        if len(self.processQuery) > 0:
+            institutions_df_end = self.getActivitiesEndedBefore(end)
+            institutions_df_start = self.getActivitiesStartedAfter(start)
+            activities_df = pd.merge(institutions_df_start, institutions_df_end, how="inner", on=["Activity_internal_id"])
+            activity_list = self.createActivityList(activities_df)
+            
+            for activity in activity_list:
+                if activity.refersTo_cho.person[0]  and activity.refersTo_cho.person[0] not in Objects: 
+                    author = activity.refersTo_cho.person[0]    
+                    Objects.append(author)
+        return Objects
 
