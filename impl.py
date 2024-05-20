@@ -183,7 +183,7 @@ class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
         self.tools_df = pd.DataFrame()
  
     def process_data(self, json_data):
-        file_path = os.path.join("resources", "process.json")
+        file_path = os.path.join("data", "process.json")
         with open(file_path, "r", encoding="utf-8") as file:
             json_data = json.load(file)
  
@@ -233,8 +233,13 @@ class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
         return activity_dfs, tools_df
  
     def pushDataToDb(self, path):
+        with open(path, "r", encoding="utf-8") as file:
+            json_data = json.load(file)
+ 
+        object_id_mapping = self.map_object_ids(json_data)
+        self.activity_dfs, self.tools_df = self.create_dataframes(json_data, object_id_mapping)
         try:
-            with connect(path) as conn:
+            with connect(self.dbPathOrUrl) as conn:
                 for activity_type, df in self.activity_dfs.items():
                     df.to_sql(activity_type.capitalize(), conn, if_exists='replace', index=False)
                 self.tools_df.to_sql('Tools', conn, if_exists='replace', index=False)
