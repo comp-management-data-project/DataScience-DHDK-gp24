@@ -337,7 +337,7 @@ class MetadataUploadHandler(UploadHandler):     # Hubert
                 if row["Author"] != "":
                     # strip author string to name and author id
                     full_author = row["Author"].strip('\"')
-                    author_id = full_author[full_author.find(":")+len(":"):full_author.rfind(")")]
+                    author_id = full_author.split("(")[1:-1].strip()
                     author_name = full_author.split("(")[0].strip()
                     author_res_id = base_url + "Person/" + author_id
                     subj_author = URIRef(author_res_id)
@@ -398,7 +398,20 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
     
     def getAllActivities(self):
         sql_command = """
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date] FROM Acquisition;
+        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
+        FROM Acquisition
+        UNION ALL
+        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
+        FROM Exporting
+        UNION ALL
+        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
+        FROM Modelling
+        UNION ALL
+        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
+        FROM Optimising
+        UNION ALL
+        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
+        FROM Processing
         """
         return self.executeQuery(sql_command)
     
