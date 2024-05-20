@@ -239,8 +239,8 @@ class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
         try:
             with connect(self.dbPathOrUrl) as conn:
                 for activity_type, df in self.activity_dfs.items():
-                    df.to_sql(activity_type.capitalize(), conn, if_exists='replace', index=False)
-                self.tools_df.to_sql('Tools', conn, if_exists='replace', index=False)
+                    df.to_sql(activity_type.capitalize(), conn, if_exists='replace', index=False, dtype="string",)
+                self.tools_df.to_sql('Tools', conn, if_exists='replace', index=False, dtype="string",)
             return True  # Return True if all operations succeed
         except Exception as e:
             print(f"Error occurred while pushing data to DB: {str(e)}")
