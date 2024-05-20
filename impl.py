@@ -380,6 +380,14 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         return pd.DataFrame() # return empty dataframe as no IdentifiableEntity in relational db
     
     def executeQuery(self, sql_command):
+        connection = connect(self.dbPathOrUrl);
+        cursor = connection.cursor();
+        cursor.execute(sql_command);
+        df = pd.DataFrame(cursor.fetchall(), columns = [description[0] for description in cursor.description]);
+        #df.columns = [description[0] for description in cursor.description]; # setting column names with list comprehension because sqlite lacks a normal reference to column names
+        connection.close();
+        return df;
+    
         with connect(self.dbPathOrUrl) as conn:
             cursor = conn.cursor()
             cursor.execute(sql_command)
@@ -390,20 +398,7 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
     
     def getAllActivities(self):
         sql_command = """
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Acquisition 
-        UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Exporting 
-        UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Modelling 
-        UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Optimising 
-        UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Processing
+        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date] FROM Acquisition;
         """
         return self.executeQuery(sql_command)
     
@@ -575,9 +570,9 @@ class MetadataQueryHandler(QueryHandler):
         query = """
             SELECT DISTINCT ?uri ?author_name ?author_id
             WHERE {
-                ?object <https://schema.org/author> ?uri .
-                ?person <https://schema.org/identifier> ?author_id .
-                ?person <https://schema.org/name> ?author_name .
+                ?object <https://schema.org/author> ?author .
+                ?author <https://schema.org/identifier> ?author_id .
+                ?author <https://schema.org/name> ?author_name .
             }
             """
         return self.execute_sparql_query(query)
@@ -620,13 +615,11 @@ class MetadataQueryHandler(QueryHandler):
                 ?object <https://schema.org/name> ?title. 
                 ?object <https://schema.org/copyrightHolder> ?owner. 
                 ?object <https://schema.org/spatial> ?place. 
-            OPTIONAL{ ?object <https://schema.org/dateCreated> ?date. } 
-            OPTIONAL{ 
                 ?object <https://schema.org/author> ?author. 
-                ?author <https://schema.org/name> ?author_name. 
-                ?author <https://schema.org/identifier> '%s'.
+                ?author <https://schema.org/name> ?author_name.
                 ?author <https://schema.org/identifier> ?author_id.
-            }}
+                ?author <https://schema.org/identifier> '%s'.
+            OPTIONAL{ ?object <https://schema.org/dateCreated> ?date. }}
             """ % personId
         return self.execute_sparql_query(query)
 
