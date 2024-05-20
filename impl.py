@@ -573,11 +573,11 @@ class MetadataQueryHandler(QueryHandler):
 
     def getAllPeople(self):
         query = """
-            SELECT DISTINCT ?uri ?name ?id
+            SELECT DISTINCT ?uri ?author_name ?author_id
             WHERE {
                 ?object <https://schema.org/author> ?uri .
-                ?person <https://schema.org/identifier> ?id .
-                ?person <https://schema.org/name> ?name .
+                ?person <https://schema.org/identifier> ?author_id .
+                ?person <https://schema.org/name> ?author_name .
             }
             """
         return self.execute_sparql_query(query)
@@ -625,6 +625,7 @@ class MetadataQueryHandler(QueryHandler):
                 ?object <https://schema.org/author> ?author. 
                 ?author <https://schema.org/name> ?author_name. 
                 ?author <https://schema.org/identifier> '%s'.
+                ?author <https://schema.org/identifier> ?author_id.
             }}
             """ % personId
         return self.execute_sparql_query(query)
@@ -632,12 +633,6 @@ class MetadataQueryHandler(QueryHandler):
 # ======================================================== #
 
 # Mashup classes
-
-
-"""
-    WHICH ONE OF THE TWO __init__ ARE WE KEEPING ???
-    one of them needs to be deleted 
-"""
 
 class BasicMashup(object):  #Hubert
     def __init__(self):
@@ -772,8 +767,8 @@ class BasicMashup(object):  #Hubert
             if cho_list:
                 return cho_list[0]  
         
-        if 'name' in df.columns and 'id' in df.columns: 
-            return Person(df.iloc[0]["id"], df.iloc[0]["name"])
+        if 'name' in df.columns and 'author_id' in df.columns: 
+            return Person(df.iloc[0]["author_id"], df.iloc[0]["author_name"])
         
         return None
 
@@ -782,7 +777,7 @@ class BasicMashup(object):  #Hubert
         if len(self.metadataQuery) > 0:
             person_df = self.metadataQuery[0].getAllPeople();
             for idx, row in person_df.iterrows():
-                person = Person(row["id"], row["name"]);
+                person = Person(row["author_id"], row["author_name"]);
                 person_list.append(person);
         return person_list;
     
@@ -798,7 +793,7 @@ class BasicMashup(object):  #Hubert
         if len(self.metadataQuery) > 0:
             author_df = self.metadataQuery[0].getAuthorsOfCulturalHeritageObject(objectId)
             for idx, row in author_df.iterrows():
-                person = Person(row["id"], row["name"])
+                person = Person(row["author_id"], row["author_name"])
                 author_list.append(person)
         return author_list
 
