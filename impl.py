@@ -219,20 +219,21 @@ class QueryHandler(Handler):
 
 # Class to upload data from JSON to SQLite database 
 
-class ProcessDataUploadHandler(Handler):    # Lucrezia
+class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
     def __init__(self, db_name=""):
         super().__init__()
         self.db_name = db_name
-
+        self.activity_dfs = {}
+        self.tools_df = pd.DataFrame()
+ 
     def process_data(self, json_data):
         file_path = os.path.join("resources", "process.json")
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             json_data = json.load(file)
-
+ 
         object_id_mapping = self.map_object_ids(json_data)
-        activity_dfs, tools_data = self.create_dataframes(json_data, object_id_mapping)
-        return activity_dfs, tools_data
-
+        self.activity_dfs, self.tools_df = self.create_dataframes(json_data, object_id_mapping)
+ 
     def map_object_ids(self, json_data):
         object_id_mapping = {}
         for item in json_data:
@@ -240,7 +241,7 @@ class ProcessDataUploadHandler(Handler):    # Lucrezia
             object_internal_id = f"CH Object-{object_id}"
             object_id_mapping[object_id] = object_internal_id
         return object_id_mapping
-
+ 
     def create_dataframes(self, json_data, object_id_mapping):
         activity_dfs = {} # a dictionary to store DataFrames for each activity type
         tools_data = [] # a list to store tool-related data
@@ -274,19 +275,18 @@ class ProcessDataUploadHandler(Handler):    # Lucrezia
                 activity_dfs[activity_type] = pd.DataFrame(activity_data)
         tools_df = pd.DataFrame(tools_data)
         return activity_dfs, tools_df
-
-
-    def pushDataToDb(self, activity_dfs, tools_df):
+ 
+    def pushDataToDb(self, path):
         try:
-            with connect(self.db_name) as conn:
-                for activity_type, df in activity_dfs.items():
+            with connect(path) as conn:
+                for activity_type, df in self.activity_dfs.items():
                     df.to_sql(activity_type.capitalize(), conn, if_exists='replace', index=False)
-                tools_df.to_sql('Tools', conn, if_exists='replace', index=False)
+                self.tools_df.to_sql('Tools', conn, if_exists='replace', index=False)
             return True  # Return True if all operations succeed
         except Exception as e:
             print(f"Error occurred while pushing data to DB: {str(e)}")
             return False  # Return False if any error occurs
-
+ 
     def handle_duplicates(self, df, conn, table_name):
         existing_data = pd.read_sql(f"SELECT * FROM {table_name}", conn)
         df = df[~df.duplicated(keep='first')]
@@ -301,9 +301,9 @@ class ProcessDataUploadHandler(Handler):    # Lucrezia
 # Class to upload CSV files to Blazegraph
 
 class MetadataUploadHandler(UploadHandler):     # Hubert
-    def __init__(self, dbPathOrUrl):
+    def __init__(self):
         self.dbPathOrUrl = ""
-        self.getById = getById
+        
 
     def getById(self, id):
         idDataFrame = idDataFrame["id"]
@@ -604,8 +604,8 @@ class MetadataQueryHandler(QueryHandler):
     def getById(self, id):
         person_query = "SELECT DISTINCT ?uri ?name ?id WHERE { ?object <https://schema.org/author> ?uri.  ?uri <https://schema.org/name> ?name.  ?uri <https://schema.org/identifier> ?id. ?uri <https://schema.org/identifier> '%s'. }" % id;
         object_query = "SELECT DISTINCT ?object ?id ?type ?title ?date ?owner ?place ?author ?author_name ?author_id WHERE { ?object <https://schema.org/identifier> ?id.  ?object <https://schema.org/identifier> '%s'. ?object <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type. ?object <https://schema.org/name> ?title. ?object <https://schema.org/dateCreated> ?date. ?object <https://schema.org/copyrightHolder> ?owner. ?object <https://schema.org/spatial> ?place. ?object <https://schema.org/author> ?author. ?author <https://schema.org/name> ?author_name. ?author <https://schema.org/identifier> ?author_id.}" % id;
-        person_df = self.execute_query(person_query);
-        object_df = self.execute_query(object_query);
+        person_df = self.execute_sparql_query(person_query);
+        object_df = self.execute_sparql_query(object_query);
         if len(object_df.index) > 0: # if objects exist return objects
             return object_df;
         return person_df; # otherwise persons exists or we return an empty dataframe
@@ -656,7 +656,7 @@ class MetadataQueryHandler(QueryHandler):
             }
             }
             """
-        return self.executeQuery(query)
+        return self.execute_sparql_query(query)
 
     def getAuthorsOfCulturalHeritageObject(self, object_id: str) -> pd.DataFrame: #Giorgia
         query = """
@@ -668,7 +668,7 @@ class MetadataQueryHandler(QueryHandler):
                 ?person schema:name ?personName .
             }
         """ % object_id
-        return self.executeQuery(query)
+        return self.execute_sparql_query(query)
 
     def getCulturalHeritageObjectsAuthoredBy(self, personId): #Giorgia
         query = """
@@ -699,10 +699,6 @@ class BasicMashup(object):  #Hubert
         self.metadataQuery = [];
         self.processQuery = [];
 
-    def __init__(self, metadataQuery, processQuery):
-        self.metadataQuery = metadataQuery;
-        self.processQuery = processQuery;
-    
     def cleanMetadataHandlers(self): # Hubert
         self.metadataQuery = [];
         return True;
@@ -933,7 +929,7 @@ class BasicMashup(object):  #Hubert
     - also beforehand check if there are any handlers actually in the list like if self.metadataQuery: 
     - then you'll have to check if the dataframe has a cultural heritage objects or a person
     """
-    def getEntityById(self, entity_id: str) -> impl.IdentifiableEntity | None: #Giorgia
+    def getEntityById(self, entity_id: str) -> IdentifiableEntity | None: #Giorgia
         if not self.metadataQuery:
             return None
         
@@ -949,7 +945,7 @@ class BasicMashup(object):  #Hubert
                 return cho_list[0]  
         
         if 'name' in df.columns and 'id' in df.columns: 
-            return impl.Person(df.iloc[0]["id"], df.iloc[0]["name"])
+            return Person(df.iloc[0]["id"], df.iloc[0]["name"])
         
         return None
 
@@ -1041,12 +1037,12 @@ class BasicMashup(object):  #Hubert
     basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
     use filtering in SQL
     """
-    def getActivitiesByResponsiblePerson(self, partialName: str) -> list[impl.Activity]:  # Giorgia
-    activities = []  
-    if len(self.processQuery) > 0:  #check for handlers 
+    def getActivitiesByResponsiblePerson(self, partialName: str) -> list[Activity]:  # Giorgia
+        activities = []  
+        if len(self.processQuery) > 0:  #check for handlers 
             activities_df = self.processQuery[0].getActivitiesByResponsiblePerson(partialName)  
             activities = self.createActivityList(activities_df) 
-    return activities  
+        return activities  
 
     def getActivitiesUsingTool(self, partial_name: str):  # Giorgia
         activities = []
@@ -1055,21 +1051,21 @@ class BasicMashup(object):  #Hubert
             activities = self.createActivityList(activities_df);
         return activities;
 
-    def getActivitiesStartedAfter(self, date: str) -> list[impl.Activity]:
+    def getActivitiesStartedAfter(self, date: str) -> list[Activity]:
         activities = []  
         if len(self.processQuery) > 0:  
             activities_df = self.processQuery[0].getStartDate(date)  
             activities = self.createActivityList(activities_df) 
         return activities  
         
-    def getActivitiesEndedBefore(self, date: str) -> list[impl.Activity]:
+    def getActivitiesEndedBefore(self, date: str) -> list[Activity]:
         activities = []  
         if len(self.processQuery) > 0:  
             activities_df = self.processQuery[0].getActivitiesEndedBefore(date)  
             activities = self.createActivityList(activities_df) 
         return activities
 
-    def getAcquisitionsByTechnique(self, technique: str) -> list[impl.Acquisition]: #Giorgia
+    def getAcquisitionsByTechnique(self, technique: str) -> list[Acquisition]: #Giorgia
         activities = []  
         if len(self.processQuery) > 0:  
             activities_df = self.processQuery[0].getActivitiesByTechnique(technique)  
@@ -1077,7 +1073,7 @@ class BasicMashup(object):  #Hubert
         return activities 
 
 class AdvancedMashup(BasicMashup):
-    def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[impl.Activity]: #Giorgia
+    def getActivitiesOnObjectsAuthoredBy(self, personId: str) -> list[Activity]: #Giorgia
         activities = []  
         
         cho_list = self.getAllCulturalHeritageObjects()
@@ -1094,7 +1090,7 @@ class AdvancedMashup(BasicMashup):
                 activities.append(item)
         return activities 
     
-    def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[impl.CulturalHeritageObject]:  #giorgia
+    def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[CulturalHeritageObject]:  #giorgia
         Objects = []
         if len(self.processQuery) > 0:
             institutions_df = self.processQuery[0].getActivitiesByResponsiblePerson(partialName)
