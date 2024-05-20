@@ -400,19 +400,19 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Acquisition AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Exporting AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Modelling AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Optimising AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Processing AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id;
@@ -425,22 +425,22 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         FROM Acquisition AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Responsible Institute] LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Exporting AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Responsible Institute] LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Modelling AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Responsible Institute] LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Optimising AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Responsible Institute] LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Processing AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
@@ -454,22 +454,22 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         FROM Acquisition AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Responsible Person] LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Exporting AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Responsible Person] LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Modelling AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Responsible Person] LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Optimising AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Responsible Person] LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Processing AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
@@ -483,22 +483,22 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         FROM Acquisition AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE T.Tool LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Exporting AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE T.Tool LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Modelling AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE T.Tool LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Optimising AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE T.Tool LIKE '%{partialName}%'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Processing AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
@@ -512,22 +512,22 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         FROM Acquisition AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Start Date] > '{date}'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Exporting AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Start Date] > '{date}'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Modelling AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Start Date] > '{date}'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Optimising AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[Start Date] > '{date}'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Processing AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
@@ -541,22 +541,22 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         FROM Acquisition AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[End Date] < '{date}'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Exporting AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[End Date] < '{date}'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Modelling AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[End Date] < '{date}'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Optimising AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
 	    WHERE A.[End Date] < '{date}'
-        UNION ALL
+        UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Processing AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
@@ -573,6 +573,7 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         ORDER BY A.[Refers To];
         """.format(partialName.lower())
         return self.executeQuery(sql_command)
+
     
 # Class to interact with Blazegraph database
 class MetadataQueryHandler(QueryHandler):
