@@ -198,22 +198,22 @@ class QueryHandler(Handler):
         super().__init__()
         self.dbPathOrUrl = dbPathOrUrl
 
-    def getById(self, id: str):
-        return None
+    #def getById(self, id: str):
+        #return None
     
   # the following implementation of getById might be helpful for MetadataQueryHandler
   # if so, add it to that class, otherwise just remove it  
 
-    # idDataFrame = None
+    idDataFrame = None
 
-    # def set_id_dataframe(self, dataframe):
-    #     self.idDataFrame = dataframe
+    def set_id_dataframe(self, dataframe):
+         self.idDataFrame = dataframe
 
-    # def getById(self, id: str):
-    #     if self.idDataFrame is None:
-    #         raise ValueError("idDataFrame is not set. Call set_id_dataframe first.")
-    #     id_value = self.idDataFrame["id"]
-    #     return id_value
+    def getById(self, id: str):
+         if self.idDataFrame is None:
+             raise ValueError("idDataFrame is not set. Call set_id_dataframe first.")
+         id_value = self.idDataFrame["id"]
+         return id_value
     
 
 
@@ -427,11 +427,14 @@ class MetadataUploadHandler(UploadHandler):     # Hubert
 
 # Class to interact with SQLite database 
 
-class ProcessDataQueryHandler(Handler):        # Lucrezia
+class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
     def __init__(self, dbPathOrUrl=""):
         super().__init__()
         self.dbPathOrUrl = dbPathOrUrl
         self.db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), self.dbPathOrUrl))
+
+    def getById(self, id:str):
+        return pd.DataFrame()
     
     def executeQuery(self, sql_command):
         with connect(self.dbPathOrUrl) as conn:
