@@ -23,8 +23,6 @@ from pandas import DataFrame, concat, read_csv, read_sql, Series
 # Date-time manipulation
 from datetime import datetime
 
-
-
 # CH Objects Metadata classes
 
 class IdentifiableEntity(object):
@@ -34,7 +32,6 @@ class IdentifiableEntity(object):
     def getId(self):
         return self.id
 
-
 class Person(IdentifiableEntity):
     def __init__(self, id: str, name: str):
         self.name = name
@@ -42,7 +39,6 @@ class Person(IdentifiableEntity):
 
     def getName(self):
         return self.name
-
 
 class CulturalHeritageObject(IdentifiableEntity):
     def __init__(self, id: str, title: str, date: str, hasAuthor: list[Person], owner: str, place: str):
@@ -69,51 +65,37 @@ class CulturalHeritageObject(IdentifiableEntity):
     def getPlace(self) -> str:
         return self.place
 
-
 class NauticalChart(CulturalHeritageObject):
     pass
-
 
 class ManuscriptPlate(CulturalHeritageObject):
     pass
 
-
 class ManuscriptVolume(CulturalHeritageObject):
     pass
-
 
 class PrintedVolume(CulturalHeritageObject):
     pass
 
-
 class PrintedMaterial(CulturalHeritageObject):
     pass
-
 
 class Herbarium(CulturalHeritageObject):
     pass
 
-
 class Specimen(CulturalHeritageObject):
     pass
-
 
 class Painting(CulturalHeritageObject):
     pass
 
-
 class Model(CulturalHeritageObject):
     pass
-
 
 class Map(CulturalHeritageObject):
     pass
 
-
-
-
 # Processes Data classes
-
 class Activity(object): # Lucrezia
     def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str, start: str, end: str, tool: set = set()):
         self.refersTo_cho = refersTo_cho
@@ -141,7 +123,6 @@ class Activity(object): # Lucrezia
     def getRefersTo_cho(self) -> CulturalHeritageObject:
         return self.refersTo_cho
 
-
 class Acquisition(Activity):
     def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str, start: str, end: str, technique: str, tool: set = set()):
         super().__init__(refersTo_cho, institute, person, start, end, tool)
@@ -162,17 +143,10 @@ class Optimising(Activity):
 class Exporting(Activity):
     pass
 
-
-
-
 # ======================================================== #
-
-
-
 
 # Basic Handlers classes
 # Hubert
-
 class Handler(object):
     def __init__(self):
         self.dbPathOrUrl = ""
@@ -190,35 +164,17 @@ class UploadHandler(Handler):
         super().__init__()
 
     def pushDataToDb(self):
-        pass
-
+        pass # never accessed here and overriden in child classes
 
 class QueryHandler(Handler): 
     def __init__(self, dbPathOrUrl=""):  # Provide a default value for dbPathOrUrl
         super().__init__()
         self.dbPathOrUrl = dbPathOrUrl
 
-    #def getById(self, id: str):
-        #return None
-    
-  # the following implementation of getById might be helpful for MetadataQueryHandler
-  # if so, add it to that class, otherwise just remove it  
-
-    idDataFrame = None
-
-    def set_id_dataframe(self, dataframe):
-         self.idDataFrame = dataframe
-
     def getById(self, id: str):
-         if self.idDataFrame is None:
-             raise ValueError("idDataFrame is not set. Call set_id_dataframe first.")
-         id_value = self.idDataFrame["id"]
-         return id_value
+        pass # never accessed here and overriden in child classes
     
-
-
 # Class to upload data from JSON to SQLite database 
-
 class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
     def __init__(self, db_name=""):
         super().__init__()
@@ -293,22 +249,11 @@ class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
         if not existing_data.empty:
             df = pd.concat([existing_data, df]).drop_duplicates(keep='first')
         return df
-    
-
-
-
 
 # Class to upload CSV files to Blazegraph
-
 class MetadataUploadHandler(UploadHandler):     # Hubert
     def __init__(self):
         self.dbPathOrUrl = ""
-        
-
-    def getById(self, id):
-        idDataFrame = idDataFrame["id"]
-        self.getById = idDataFrame
-        return self.getById
 
     def pushDataToDb(self, path):
         try:
@@ -417,16 +362,9 @@ class MetadataUploadHandler(UploadHandler):     # Hubert
             print("The upload of data to Blazegraph failed: " + str(e))
             return False
 
-
-
-
 # ======================================================== #
 
-
-
-
 # Class to interact with SQLite database 
-
 class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
     def __init__(self, dbPathOrUrl=""):
         super().__init__()
@@ -434,7 +372,7 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         self.db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), self.dbPathOrUrl))
 
     def getById(self, id:str):
-        return pd.DataFrame()
+        return pd.DataFrame() # return empty dataframe as no IdentifiableEntity in relational db
     
     def executeQuery(self, sql_command):
         with connect(self.dbPathOrUrl) as conn:
@@ -593,25 +531,10 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         """.format(partialName.lower())
         return self.executeQuery(sql_command)
     
-
-
 # Class to interact with Blazegraph database
-
 class MetadataQueryHandler(QueryHandler):
-
-    idDataFrame = None
-
-    def set_id_dataframe(self, dataframe):
-        self.idDataFrame = dataframe
-
-    def getById(self, id):
-        person_query = "SELECT DISTINCT ?uri ?name ?id WHERE { ?object <https://schema.org/author> ?uri.  ?uri <https://schema.org/name> ?name.  ?uri <https://schema.org/identifier> ?id. ?uri <https://schema.org/identifier> '%s'. }" % id;
-        object_query = "SELECT DISTINCT ?object ?id ?type ?title ?date ?owner ?place ?author ?author_name ?author_id WHERE { ?object <https://schema.org/identifier> ?id.  ?object <https://schema.org/identifier> '%s'. ?object <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type. ?object <https://schema.org/name> ?title. ?object <https://schema.org/dateCreated> ?date. ?object <https://schema.org/copyrightHolder> ?owner. ?object <https://schema.org/spatial> ?place. ?object <https://schema.org/author> ?author. ?author <https://schema.org/name> ?author_name. ?author <https://schema.org/identifier> ?author_id.}" % id;
-        person_df = self.execute_sparql_query(person_query);
-        object_df = self.execute_sparql_query(object_query);
-        if len(object_df.index) > 0: # if objects exist return objects
-            return object_df;
-        return person_df; # otherwise persons exists or we return an empty dataframe
+    def __init__(self):
+        self.dbPathOrUrl = "";
     
     def execute_sparql_query(self, query):      # helper method
         sparql = SPARQLWrapper.SPARQLWrapper(self.dbPathOrUrl);
@@ -634,58 +557,72 @@ class MetadataQueryHandler(QueryHandler):
             df = df.reset_index(drop=True);
         return df;
 
+    def getById(self, id):
+        person_query = "SELECT DISTINCT ?uri ?name ?id WHERE { ?object <https://schema.org/author> ?uri.  ?uri <https://schema.org/name> ?name.  ?uri <https://schema.org/identifier> ?id. ?uri <https://schema.org/identifier> '%s'. }" % id;
+        object_query = "SELECT DISTINCT ?object ?id ?type ?title ?date ?owner ?place ?author ?author_name ?author_id WHERE { ?object <https://schema.org/identifier> ?id.  ?object <https://schema.org/identifier> '%s'. ?object <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type. ?object <https://schema.org/name> ?title. ?object <https://schema.org/dateCreated> ?date. ?object <https://schema.org/copyrightHolder> ?owner. ?object <https://schema.org/spatial> ?place. ?object <https://schema.org/author> ?author. ?author <https://schema.org/name> ?author_name. ?author <https://schema.org/identifier> ?author_id.}" % id;
+        person_df = self.execute_sparql_query(person_query);
+        object_df = self.execute_sparql_query(object_query);
+        if len(object_df.index) > 0: # if objects exist return objects
+            return object_df;
+        return person_df; # otherwise persons exists or we return an empty dataframe
+
     def getAllPeople(self):
         query = """
-            SELECT DISTINCT ?personId ?personName
+            SELECT DISTINCT ?uri ?name ?id
             WHERE {
-                ?item schema:author ?person .
-                ?person schema:identifier ?personId .
-                ?person schema:name ?personName .
+                ?object <https://schema.org/author> ?uri .
+                ?person <https://schema.org/identifier> ?id .
+                ?person <https://schema.org/name> ?name .
             }
             """
         return self.execute_sparql_query(query)
 
     def getAllCulturalHeritageObjects(self):
         query = """
-            SELECT DISTINCT ?Id ?Type ?Title ?Date ?AuthorName ?AuthorId ?Owner ?Place
-            WHERE {
-                ?type a schema:type ;
-                FILTER(REGEX(STR(?type), "http://dbpedia.org/resource"))
-                ?type a ?https://comp-data.github.io/res/
-                
-            OPTIONAL {
-                ?person ?schema:name ?AuthorName
-                ?person ?schema:identifier ?AuthorId
-            }
-            }
+            SELECT DISTINCT ?object ?id ?type ?title ?date ?owner ?place ?author ?author_name ?author_id 
+            WHERE { 
+                ?object <https://schema.org/identifier> ?id. 
+                ?object <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type. 
+                ?object <https://schema.org/name> ?title. 
+                ?object <https://schema.org/copyrightHolder> ?owner. 
+                ?object <https://schema.org/spatial> ?place. 
+            OPTIONAL{ ?object <https://schema.org/dateCreated> ?date. } 
+            OPTIONAL{ 
+                ?object <https://schema.org/author> ?author. 
+                ?author <https://schema.org/name> ?author_name. 
+                ?author <https://schema.org/identifier> ?author_id.
+            }}
             """
         return self.execute_sparql_query(query)
 
     def getAuthorsOfCulturalHeritageObject(self, object_id: str) -> pd.DataFrame: #Giorgia
         query = """
-            SELECT ?authorId ?authorName
-            WHERE {
-                ?item schema:identifier %s .
-                ?item schema:author ?person .
-                ?person schema:identifier ?personId .
-                ?person schema:name ?personName .
-            }
-        """ % object_id
+            SELECT DISTINCT ?author ?author_name ?author_id 
+            WHERE { 
+                ?object <https://schema.org/identifier> '%s'. 
+                ?object <https://schema.org/author> ?author. 
+                ?author <https://schema.org/name> ?author_name. 
+                ?author <https://schema.org/identifier> ?author_id. 
+                }""" % object_id
         return self.execute_sparql_query(query)
 
     def getCulturalHeritageObjectsAuthoredBy(self, personId): #Giorgia
         query = """
-          SELECT ?objectId ?objectName
-          WHERE {
-             ?objectId schema:author %s .
-             ?objectId schema:name ?objectName .
-             FILTER (?author = "%s"^^xsd:string)
-            }
-            """ % (personId, personId)
+            SELECT DISTINCT ?object ?id ?type ?title ?date ?owner ?place ?author ?author_name ?author_id 
+            WHERE { 
+                ?object <https://schema.org/identifier> ?id. 
+                ?object <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type. 
+                ?object <https://schema.org/name> ?title. 
+                ?object <https://schema.org/copyrightHolder> ?owner. 
+                ?object <https://schema.org/spatial> ?place. 
+            OPTIONAL{ ?object <https://schema.org/dateCreated> ?date. } 
+            OPTIONAL{ 
+                ?object <https://schema.org/author> ?author. 
+                ?author <https://schema.org/name> ?author_name. 
+                ?author <https://schema.org/identifier> '%s'.
+            }}
+            """ % personId
         return self.execute_sparql_query(query)
-
-
-
 
 # ======================================================== #
 
@@ -701,6 +638,103 @@ class BasicMashup(object):  #Hubert
     def __init__(self):
         self.metadataQuery = [];
         self.processQuery = [];
+
+    # helper method to reduce code clutter # Hubert
+    def createActivityList(self, df): # Hubert 
+        activities = []
+        
+        # formatted version Lucrezia
+        for idx, row in df.iterrows():
+            cho = self.getEntityById(row["Refers To"].split('-')[1])
+            if "acquisition" in row["Activity_internal_id"]:
+                activity = Acquisition(
+                    cho,
+                    row["Responsible Institute"],
+                    row["Responsible Person"],
+                    row["Tool"],
+                    row["Start Date"],
+                    row["End Date"],
+                    row["Technique"]
+                )
+                activities.append(activity)
+            elif "processing" in row["Activity_internal_id"]:
+                activity = Processing(
+                    cho,
+                    row["Responsible Institute"],
+                    row["Responsible Person"],
+                    row["Tool"],
+                    row["Start Date"],
+                    row["End Date"]
+                )
+                activities.append(activity)
+            elif "modelling" in row["Activity_internal_id"]:
+                activity = Modelling(
+                    cho,
+                    row["Responsible Institute"],
+                    row["Responsible Person"],
+                    row["Tool"],
+                    row["Start Date"],
+                    row["End Date"]
+                )
+                activities.append(activity)
+            elif "optimising" in row["Activity_internal_id"]:
+                activity = Optimising(
+                    cho,
+                    row["Responsible Institute"],
+                    row["Responsible Person"],
+                    row["Tool"],
+                    row["Start Date"],
+                    row["End Date"]
+                )
+                activities.append(activity)
+            elif "exporting" in row["Activity_internal_id"]:
+                activity = Exporting(
+                    cho,
+                    row["Responsible Institute"],
+                    row["Responsible Person"],
+                    row["Tool"],
+                    row["Start Date"],
+                    row["End Date"]
+                )
+                activities.append(activity)
+        
+        return activities
+
+    # helper method to reduce code clutter
+    def createObjectList(self, cho_df): # Hubert
+        cho_list = [];
+        for idx, row in cho_df.iterrows():
+            if "Nautical_chart" in row["type"]:
+                obj = NauticalChart(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+            elif "Manuscript_plate" in row["type"]:
+                obj = ManuscriptPlate(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+            elif "Manuscript_volume" in row["type"]:
+                obj = ManuscriptVolume(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+            elif "Printed_volume" in row["type"]:
+                obj = PrintedVolume(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+            elif "Printed_material" in row["type"]:
+                obj = PrintedMaterial(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+            elif "Herbarium" in row["type"]:
+                obj = Herbarium(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+            elif "Specimen" in row["type"]:
+                obj = Specimen(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+            elif "Painting" in row["type"]:
+                obj = Painting(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+            elif "Model" in row["type"]:
+                obj = Model(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+            elif "Map" in row["type"]:
+                obj = Map(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                cho_list.append(obj)
+        return cho_list;
 
     def cleanMetadataHandlers(self): # Hubert
         self.metadataQuery = [];
@@ -718,221 +752,7 @@ class BasicMashup(object):  #Hubert
         self.processQuery.append(handler);
         return True;
 
-    # helper method to reduce code clutter # Hubert
-    def createActivityList(self, df): # Hubert 
-        activities = []
-        
-        # formatted version Lucrezia
-        for idx, row in df.iterrows():
-            if row["type"] == "acquisition":
-                activity = Acquisition(
-                    row["responsible_institute"],
-                    row["responsible_person"],
-                    row["tool"],
-                    row["start_date"],
-                    row["end_date"],
-                    row["object_id"],
-                    row["technique"]
-                )
-            elif "acquisition" in row["Activity_internal_id"]:
-                activity = Acquisition(
-                    CulturalHeritageObject(row["Activity_internal_id"].rsplit('-'), "", "", "", "", ""),
-                    row["Responsible Institute"],
-                    row["Responsible Person"],
-                    row["Tool"],
-                    row["Start Date"],
-                    row["End Date"],
-                    row["Technique"]
-                )
-                activities.append(activity)
-            elif row["type"] == "processing":
-                activity = Processing(
-                    row["responsible_institute"],
-                    row["responsible_person"],
-                    row["tool"],
-                    row["start_date"],
-                    row["end_date"],
-                    row["object_id"]
-                )
-            elif "processing" in row["Activity_internal_id"]:
-                activity = Processing(
-                    CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""),
-                    row["Responsible Institute"],
-                    row["Responsible Person"],
-                    row["Tool"],
-                    row["Start Date"],
-                    row["End Date"]
-                )
-                activities.append(activity)
-            elif row["type"] == "modelling":
-                activity = Modelling(
-                    row["responsible_institute"],
-                    row["responsible_person"],
-                    row["tool"],
-                    row["start_date"],
-                    row["end_date"],
-                    row["object_id"]
-                )
-            elif "modelling" in row["Activity_internal_id"]:
-                activity = Modelling(
-                    CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""),
-                    row["Responsible Institute"],
-                    row["Responsible Person"],
-                    row["Tool"],
-                    row["Start Date"],
-                    row["End Date"]
-                )
-                activities.append(activity)
-            elif row["type"] == "optimising":
-                activity = Optimising(
-                    row["responsible_institute"],
-                    row["responsible_person"],
-                    row["tool"],
-                    row["start_date"],
-                    row["end_date"],
-                    row["object_id"]
-                )
-            elif "optimising" in row["Activity_internal_id"]:
-                activity = Optimising(
-                    CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""),
-                    row["Responsible Institute"],
-                    row["Responsible Person"],
-                    row["Tool"],
-                    row["Start Date"],
-                    row["End Date"]
-                )
-                activities.append(activity)
-            elif row["type"] == "exporting":
-                activity = Exporting(
-                    row["responsible_institute"],
-                    row["responsible_person"],
-                    row["tool"],
-                    row["start_date"],
-                    row["end_date"],
-                    row["object_id"]
-                )
-            elif "exporting" in row["Activity_internal_id"]:
-                activity = Exporting(
-                    CulturalHeritageObject(row["activity_internal_id"].rsplit('-'), "", "", "", "", ""),
-                    row["Responsible Institute"],
-                    row["Responsible Person"],
-                    row["Tool"],
-                    row["Start Date"],
-                    row["End Date"]
-                )
-                activities.append(activity)
-        
-        return activities
-
-    # helper method to reduce code clutter
-    # column names here might have to be changed, depending on your implementation of loading data to sparql
-    def createObjectList(self, cho_df): # Hubert
-        cho_list = [];
-        for idx, row in cho_df.iterrows():
-            if "Nautical_chart" in row["type"]:
-                obj = NauticalChart();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-            elif "Manuscript_plate" in row["type"]:
-                obj = ManuscriptPlate();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-            elif "Manuscript_volume" in row["type"]:
-                obj = ManuscriptVolume();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-            elif "Printed_volume" in row["type"]:
-                obj = PrintedVolume();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-            elif "Printed_material" in row["type"]:
-                obj = PrintedMaterial();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-            elif "Herbarium" in row["type"]:
-                obj = Herbarium();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-            elif "Specimen" in row["type"]:
-                obj = Specimen();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-            elif "Painting" in row["type"]:
-                obj = Painting();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-            elif "Model" in row["type"]:
-                obj = Model();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-            elif "Map" in row["type"]:
-                obj = Map();
-                obj.id = row["id"];
-                obj.title = row["title"];
-                obj.date = row["date"];
-                obj.owner = row["owner"];
-                obj.place = row["place"];
-                obj.author = [Person(row["author_id"], row["author_name"])];
-                cho_list.append(obj)
-        return cho_list;
-
-    """
-    general sidenote: do filtering with SQL and SPARQL
-    """
-    
-    """
-    good try, however:
-    - here we should implement getById in the MetadataQueryHandler I'm afraid, and run two queries, one checking for id of authors, another for id of objects
-    - remember that this class has a list of MetadataQueryHandler objects, so to get the dataframe, use something like cho_df = self.metadataQuery[0].getById(id)
-    - also beforehand check if there are any handlers actually in the list like if self.metadataQuery: 
-    - then you'll have to check if the dataframe has a cultural heritage objects or a person
-    """
-    def getEntityById(self, entity_id: str) -> IdentifiableEntity | None: #Giorgia
+    def getEntityById(self, entity_id: str) -> IdentifiableEntity: #Giorgia
         if not self.metadataQuery:
             return None
         
@@ -952,9 +772,6 @@ class BasicMashup(object):  #Hubert
         
         return None
 
-    """
-    I've added my getAllPeople() function, as it's a nice start for all the other functions of this class
-    """
     def getAllPeople(self):
         person_list = [];
         if len(self.metadataQuery) > 0:
@@ -964,27 +781,12 @@ class BasicMashup(object):  #Hubert
                 person_list.append(person);
         return person_list;
     
-    """
-    alright so:
-    - at the start, remember to initialise the list of returned objects as empty and writing the return statement
-    - cho_df should be retrieved from a handler from this class' list of MetadataQueryHandlers, not passed in the constructor
-    - eg. cho_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
-    - then you pass this cho_df as an argument for the createObjectList, so: cho_list = self.createObjectList(cho_df)
-    - these two lines should be a part of an if statement checking if the list of metadata handlers is not empty: if self.metadataQuery:
-    (take a look at getAllActivities)
-    """
     def getAllCulturalHeritageObjects(self) -> list[CulturalHeritageObject]:  # Iheb
        cho_list = []
        if len(self.metadataQuery) > 0:
         cho_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
         cho_list =  self.createObjectList(cho_df)
        return cho_list
-
-    """
-    this is basically getAllPeople, with one line changed:
-    - call getAuthorsOfCulturalHeritageObject(objectId) instead of getAllPeople
-    this method is supposed to return a list of Person objects, nice to see the list comprehension, but it would return a list of one author name as a string
-    """
 
     def getAuthorsOfCulturalHeritageObject(self, objectId: str) -> list[Person]:
         author_list = []
@@ -995,12 +797,6 @@ class BasicMashup(object):  #Hubert
                 author_list.append(person)
         return author_list
 
-
-
-    """
-    this is basically getAllCulturalHeritageObjects with one line changed:
-    - call getCulturalHeritageObjectsAuthoredBy(AuthorId) instead of getAllCulturalHeritageObjects()
-    """
     def getCulturalHeritageObjectsAuthoredBy(self, AuthorId: str) -> list[CulturalHeritageObject]:  # Iheb
        cho_list = []
        if len(self.metadataQuery) > 0:
@@ -1008,26 +804,12 @@ class BasicMashup(object):  #Hubert
         cho_list =  self.createObjectList(cho_df)
         return cho_list
 
-
-    """
-    activities methods are basically all the same so I think it's only necessary to describe one:
-    - we initialise a list of activities as an empty list and write a return statement at the end of the function
-    - this class has an attribute processQuery, which is acting as a list of ProcessDataQueryHandler objects
-    - so, don't pass the dataframes as attributes in this function, check if there are handlers in that list
-    - if so, call an appropriate self.processQuery[0] method, like getAllActivities here (the functions from this class all have a corresponding function with the same name in the QueryHandlers)
-    - then call self.CreateActivityList() using the dataframe you got from the previous step
-    """
     def getAllActivities(self): # Giorgia
         activities = []
         if len(self.processQuery) > 0:
             activities_df = self.processQuery[0].getAllActivities();
             activities = self.createActivityList(activities_df);
         return activities;
-
-    """
-    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
-    use filtering in SQL
-    """
     
     def getActivitiesByResponsibleInstitution(self, partialName: str) -> list[Activity]:
         activities = []  
@@ -1036,10 +818,6 @@ class BasicMashup(object):  #Hubert
             activities = self.createActivityList(activities_df) 
         return activities  
 
-    """
-    basically the same as getAllActivities, just use a different method from ProcessDataQueryHandler
-    use filtering in SQL
-    """
     def getActivitiesByResponsiblePerson(self, partialName: str) -> list[Activity]:  # Giorgia
         activities = []  
         if len(self.processQuery) > 0:  #check for handlers 
@@ -1050,14 +828,14 @@ class BasicMashup(object):  #Hubert
     def getActivitiesUsingTool(self, partial_name: str):  # Giorgia
         activities = []
         if len(self.processQuery) > 0:
-            activities_df = self.processQuery[0].getActivitiesUsingTool();
+            activities_df = self.processQuery[0].getActivitiesUsingTool(partial_name);
             activities = self.createActivityList(activities_df);
         return activities;
 
     def getActivitiesStartedAfter(self, date: str) -> list[Activity]:
         activities = []  
         if len(self.processQuery) > 0:  
-            activities_df = self.processQuery[0].getStartDate(date)  
+            activities_df = self.processQuery[0].getActivitiesStartedAfter(date)  
             activities = self.createActivityList(activities_df) 
         return activities  
         
@@ -1071,7 +849,7 @@ class BasicMashup(object):  #Hubert
     def getAcquisitionsByTechnique(self, technique: str) -> list[Acquisition]: #Giorgia
         activities = []  
         if len(self.processQuery) > 0:  
-            activities_df = self.processQuery[0].getActivitiesByTechnique(technique)  
+            activities_df = self.processQuery[0].getAcquisitionsByTechnique(technique)  
             activities = self.createActivityList(activities_df) 
         return activities 
 
@@ -1083,7 +861,7 @@ class AdvancedMashup(BasicMashup):
         filt_cho = []
         for item in cho_list:
             person = item.getAuthors()
-            person_id = person.id
+            person_id = person[0].id
             if person_id == personId and item not in filt_cho:
                 filt_cho.append(item)
        
@@ -1094,7 +872,7 @@ class AdvancedMashup(BasicMashup):
         return activities 
     
     def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[CulturalHeritageObject]:  #giorgia
-        Objects = []
+        objects = []
         if len(self.processQuery) > 0:
             institutions_df = self.processQuery[0].getActivitiesByResponsiblePerson(partialName)
             activities = self.createActivityList(institutions_df)
@@ -1103,14 +881,16 @@ class AdvancedMashup(BasicMashup):
                 object_list = self.createObjectList(objects_df)
                 object_ids = []
                 for activity in activities:
-                    activity_id =activity.refersTo_cho.id
+                    activity_id = activity.refersTo_cho.id
                     if activity_id not in object_ids:
                         object_ids.append(activity_id)
-                        Objects.append(object)
-        return Objects
+                for cho in object_list:
+                    if cho.id in object_ids and cho not in objects:
+                        objects.append(cho)
+        return objects
 
     def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[CulturalHeritageObject]:  # Iheb
-        Objects = []
+        objects = []
         if len(self.processQuery) > 0:
             institutions_df = self.processQuery[0].getActivitiesByResponsibleInstitution(partialName)
             activities = self.createActivityList(institutions_df)
@@ -1119,23 +899,24 @@ class AdvancedMashup(BasicMashup):
                 object_list = self.createObjectList(objects_df)
                 object_ids = []
                 for activity in activities:
-                    activity_id =activity.refersTo_cho.id
+                    activity_id = activity.refersTo_cho.id
                     if activity_id not in object_ids:
                         object_ids.append(activity_id)
-                        Objects.append(object)
-        return Objects
+                for cho in object_list:
+                    if cho.id in object_ids and cho not in objects:
+                        objects.append(cho)
+        return objects
 
     def getAuthorsOfObjectsAcquiredInTimeFrame(self, start: str, end: str) -> list[Person]:  # Iheb
-        Objects = []
+        authors = []
         if len(self.processQuery) > 0:
-            institutions_df_end = self.getActivitiesEndedBefore(end)
-            institutions_df_start = self.getActivitiesStartedAfter(start)
-            activities_df = pd.merge(institutions_df_start, institutions_df_end, how="inner", on=["Activity_internal_id"])
-            activity_list = self.createActivityList(activities_df)
+            activities_before = self.getActivitiesEndedBefore(end)
+            activities_after = self.getActivitiesStartedAfter(start)
+            activity_list = [value for value in activities_before if value in activities_after]
             
             for activity in activity_list:
-                if activity.refersTo_cho.person[0]  and activity.refersTo_cho.person[0] not in Objects: 
+                if activity.refersTo_cho.person[0] and activity.refersTo_cho.person[0] not in authors: 
                     author = activity.refersTo_cho.person[0]    
-                    Objects.append(author)
-        return Objects
+                    authors.append(author)
+        return authors
 
