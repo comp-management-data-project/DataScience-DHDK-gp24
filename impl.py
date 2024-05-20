@@ -9,8 +9,6 @@ import csv
 from sqlite3 import connect
 from json import load
 
-import sqlite3
-
 # Imports for graph db
 from rdflib import RDF, Graph, URIRef, Literal
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
@@ -337,7 +335,8 @@ class MetadataUploadHandler(UploadHandler):     # Hubert
                 if row["Author"] != "":
                     # strip author string to name and author id
                     full_author = row["Author"].strip('\"')
-                    author_id = full_author.split("(")[1:-1].strip()
+                    author_id = full_author.split("(")[1]
+                    author_id = author_id[:-1].strip()
                     author_name = full_author.split("(")[0].strip()
                     author_res_id = base_url + "Person/" + author_id
                     subj_author = URIRef(author_res_id)
@@ -398,149 +397,180 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
     
     def getAllActivities(self):
         sql_command = """
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Acquisition
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Acquisition AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Exporting
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Exporting AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Modelling
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Modelling AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Optimising
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Optimising AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Processing
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Processing AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id;
         """
         return self.executeQuery(sql_command)
     
     def getActivitiesByResponsibleInstitution(self, partialName):
         sql_command = f"""
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Acquisition WHERE [Responsible Institute] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Acquisition AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Institute] LIKE '%{partialName}%'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Exporting WHERE [Responsible Institute] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Exporting AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Institute] LIKE '%{partialName}%'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Modelling WHERE [Responsible Institute] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Modelling AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Institute] LIKE '%{partialName}%'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Optimising WHERE [Responsible Institute] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Optimising AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Institute] LIKE '%{partialName}%'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Processing WHERE [Responsible Institute] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Processing AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Institute] LIKE '%{partialName}%';
         """
         return self.executeQuery(sql_command)
     
     def getActivitiesByResponsiblePerson(self, partialName: str) -> DataFrame:
         sql_command = f"""
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Acquisition
-        WHERE [Responsible Person] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Acquisition AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Person] LIKE '%{partialName}%'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Exporting
-        WHERE [Responsible Person] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Exporting AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Person] LIKE '%{partialName}%'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Modelling
-        WHERE [Responsible Person] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Modelling AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Person] LIKE '%{partialName}%'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Optimising
-        WHERE [Responsible Person] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Optimising AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Person] LIKE '%{partialName}%'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Processing
-        WHERE [Responsible Person] LIKE '%{partialName}%'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Processing AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Responsible Person] LIKE '%{partialName}%';
         """
         return self.executeQuery(sql_command)
 
     def getActivitiesUsingTool(self, partialName: str) -> DataFrame:
         sql_command = f"""
-        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date]
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Acquisition AS A
-        INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-        WHERE T.Tool LIKE '%{partialName}%'
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE T.Tool LIKE '%{partialName}%'
         UNION ALL
-        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date]
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Exporting AS A
-        INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-        WHERE T.Tool LIKE '%{partialName}%'
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE T.Tool LIKE '%{partialName}%'
         UNION ALL
-        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date]
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Modelling AS A
-        INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-        WHERE T.Tool LIKE '%{partialName}%'
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE T.Tool LIKE '%{partialName}%'
         UNION ALL
-        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date]
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Optimising AS A
-        INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-        WHERE T.Tool LIKE '%{partialName}%'
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE T.Tool LIKE '%{partialName}%'
         UNION ALL
-        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date]
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Processing AS A
-        INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-        WHERE T.Tool LIKE '%{partialName}%'
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE T.Tool LIKE '%{partialName}%';
         """
         return self.executeQuery(sql_command)
 
     def getActivitiesStartedAfter(self, date: str) -> DataFrame:
         sql_command = f"""
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Acquisition
-        WHERE [Start Date] > '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Acquisition AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Start Date] > '{date}'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Exporting
-        WHERE [Start Date] > '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Exporting AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Start Date] > '{date}'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Modelling
-        WHERE [Start Date] > '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Modelling AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Start Date] > '{date}'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Optimising
-        WHERE [Start Date] > '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Optimising AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Start Date] > '{date}'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Processing
-        WHERE [Start Date] > '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Processing AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[Start Date] > '{date}';
         """
         return self.executeQuery(sql_command)
 
     def getActivitiesEndedBefore(self, date: str) -> DataFrame:
         sql_command = f"""
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Acquisition
-        WHERE [End Date] < '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Acquisition AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[End Date] < '{date}'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Exporting
-        WHERE [End Date] < '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Exporting AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[End Date] < '{date}'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Modelling
-        WHERE [End Date] < '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Modelling AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[End Date] < '{date}'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Optimising
-        WHERE [End Date] < '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Optimising AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[End Date] < '{date}'
         UNION ALL
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Processing
-        WHERE [End Date] < '{date}'
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Processing AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE A.[End Date] < '{date}';
         """
         return self.executeQuery(sql_command)
 
     def getAcquisitionsByTechnique(self, partialName: str) -> DataFrame:
         sql_command = """
-        SELECT Activity_internal_id, [Refers To], [Responsible Institute], [Responsible Person], Technique, [Start Date], [End Date]
-        FROM Acquisition
-        WHERE LOWER(Technique) LIKE '%{}%'
-        ORDER BY [Refers To]
+        SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
+        FROM Acquisition AS A
+	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
+	    WHERE LOWER(A.Technique) LIKE '%{}%'
+        ORDER BY A.[Refers To];
         """.format(partialName.lower())
         return self.executeQuery(sql_command)
     
@@ -652,7 +682,7 @@ class BasicMashup(object):  #Hubert
         # formatted version Lucrezia
         for idx, row in df.iterrows():
             cho = self.getEntityById(row["Refers To"].split('-')[1])
-            if "acquisition" in row["Activity_internal_id"]:
+            if "Acquisition" in row["Activity_internal_id"]:
                 activity = Acquisition(
                     cho,
                     row["Responsible Institute"],
@@ -663,7 +693,7 @@ class BasicMashup(object):  #Hubert
                     row["Technique"]
                 )
                 activities.append(activity)
-            elif "processing" in row["Activity_internal_id"]:
+            elif "Processing" in row["Activity_internal_id"]:
                 activity = Processing(
                     cho,
                     row["Responsible Institute"],
@@ -673,7 +703,7 @@ class BasicMashup(object):  #Hubert
                     row["End Date"]
                 )
                 activities.append(activity)
-            elif "modelling" in row["Activity_internal_id"]:
+            elif "Modelling" in row["Activity_internal_id"]:
                 activity = Modelling(
                     cho,
                     row["Responsible Institute"],
@@ -683,7 +713,7 @@ class BasicMashup(object):  #Hubert
                     row["End Date"]
                 )
                 activities.append(activity)
-            elif "optimising" in row["Activity_internal_id"]:
+            elif "Optimising" in row["Activity_internal_id"]:
                 activity = Optimising(
                     cho,
                     row["Responsible Institute"],
@@ -693,7 +723,7 @@ class BasicMashup(object):  #Hubert
                     row["End Date"]
                 )
                 activities.append(activity)
-            elif "exporting" in row["Activity_internal_id"]:
+            elif "Exporting" in row["Activity_internal_id"]:
                 activity = Exporting(
                     cho,
                     row["Responsible Institute"],
