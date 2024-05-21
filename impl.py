@@ -17,6 +17,7 @@ import SPARQLWrapper
 # Imports for both
 import pandas as pd
 from pandas import DataFrame, concat, read_csv, read_sql, Series
+import numpy as np
 
 # Date-time manipulation
 from datetime import datetime
@@ -597,7 +598,7 @@ class MetadataQueryHandler(QueryHandler):
                     row_dict.update({column: row[column]["value"]});
             df.loc[len(df)] = row_dict;
             df = df.reset_index(drop=True);
-        return df;
+        return df.replace(np.nan, " ");
 
     def getById(self, id):
         person_query = "SELECT DISTINCT ?uri ?name ?id WHERE { ?object <https://schema.org/author> ?uri.  ?uri <https://schema.org/name> ?name.  ?uri <https://schema.org/identifier> ?id. ?uri <https://schema.org/identifier> '%s'. }" % id;
@@ -739,35 +740,38 @@ class BasicMashup(object):  #Hubert
     def createObjectList(self, cho_df): # Hubert
         cho_list = [];
         for idx, row in cho_df.iterrows():
+            author_list = []
+            if row["author_id"] != " " and row["author_name"] != " ":
+                author_list.append(Person(row["author_id"], row["author_name"]))
             if "Nautical_chart" in row["type"]:
-                obj = NauticalChart(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = NauticalChart(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
             elif "Manuscript_plate" in row["type"]:
-                obj = ManuscriptPlate(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = ManuscriptPlate(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
             elif "Manuscript_volume" in row["type"]:
-                obj = ManuscriptVolume(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = ManuscriptVolume(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
             elif "Printed_volume" in row["type"]:
-                obj = PrintedVolume(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = PrintedVolume(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
             elif "Printed_material" in row["type"]:
-                obj = PrintedMaterial(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = PrintedMaterial(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
             elif "Herbarium" in row["type"]:
-                obj = Herbarium(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = Herbarium(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
             elif "Specimen" in row["type"]:
-                obj = Specimen(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = Specimen(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
             elif "Painting" in row["type"]:
-                obj = Painting(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = Painting(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
             elif "Model" in row["type"]:
-                obj = Model(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = Model(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
             elif "Map" in row["type"]:
-                obj = Map(row["id"], row["title"], row["date"], [Person(row["author_id"], row["author_name"])], row["owner"], row["place"]);
+                obj = Map(row["id"], row["title"], row["date"], author_list, row["owner"], row["place"]);
                 cho_list.append(obj)
         return cho_list;
 
@@ -812,8 +816,9 @@ class BasicMashup(object):  #Hubert
         if len(self.metadataQuery) > 0:
             person_df = self.metadataQuery[0].getAllPeople();
             for idx, row in person_df.iterrows():
-                person = Person(row["author_id"], row["author_name"]);
-                person_list.append(person);
+                if row["author_id"] != " " and row["author_name"] != " ":
+                    person = Person(row["author_id"], row["author_name"]);
+                    person_list.append(person);
         return person_list;
     
     def getAllCulturalHeritageObjects(self) -> list[CulturalHeritageObject]:  # Iheb
@@ -828,8 +833,9 @@ class BasicMashup(object):  #Hubert
         if len(self.metadataQuery) > 0:
             author_df = self.metadataQuery[0].getAuthorsOfCulturalHeritageObject(objectId)
             for idx, row in author_df.iterrows():
-                person = Person(row["author_id"], row["author_name"])
-                author_list.append(person)
+                if row["author_id"] != " " and row["author_name"] != " ":
+                    person = Person(row["author_id"], row["author_name"])
+                    author_list.append(person)
         return author_list
 
     def getCulturalHeritageObjectsAuthoredBy(self, AuthorId: str) -> list[CulturalHeritageObject]:  # Iheb
@@ -896,9 +902,10 @@ class AdvancedMashup(BasicMashup):
         filt_cho = []
         for item in cho_list:
             person = item.getAuthors()
-            person_id = person[0].id
-            if str(personId) in str(person_id) and item not in filt_cho:
-                filt_cho.append(item)
+            if person:
+                person_id = person[0].id
+                if str(personId) in str(person_id) and item not in filt_cho:
+                    filt_cho.append(item)
        
         activities_list = self.getAllActivities()
         for item in activities_list:
@@ -964,9 +971,10 @@ class AdvancedMashup(BasicMashup):
                     activity_list.append(acquisition)
             
             for activity in activity_list:
-                author = activity.refersTo_cho.hasAuthor[0] 
-                author_id = author.id
-                if author_id not in author_ids and author_id == author_id:
-                    author_ids.append(author_id)
-                    authors.append(author)
+                if activity.refersTo_cho.hasAuthor:
+                    author = activity.refersTo_cho.hasAuthor[0] 
+                    author_id = author.id
+                    if author_id not in author_ids and author_id != " ":
+                        author_ids.append(author_id)
+                        authors.append(author)
         return authors
