@@ -1,6 +1,5 @@
 from typing import Optional
 import os
-import math
 import json
 import csv
 
