@@ -174,7 +174,7 @@ class QueryHandler(Handler):
     
 # Class to upload data from JSON to SQLite database 
 class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
-    def __init__(self, db_name=""):
+    def __init__(self, db_name="relational.db"):
         super().__init__()
         self.db_name = db_name
         self.activity_dfs = {}
