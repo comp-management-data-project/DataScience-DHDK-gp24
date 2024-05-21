@@ -208,7 +208,9 @@ class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
                     if activity:
                         start_date = activity.get("start date", "")
                         end_date = activity.get("end date", "")
-                        if start_date != "" and end_date != "":
+                        responsible_institute = activity.get("responsible institute", "")
+                        responsible_person = activity.get("responsible person", "")
+                        if start_date != "" or end_date != "" or responsible_institute != "" or responsible_person != "":
                             object_id = item['object id']
                             activity_internal_id = f"{activity_type.capitalize()}-{activity_count:02d}"
                             activity_count += 1
@@ -975,4 +977,3 @@ class AdvancedMashup(BasicMashup):
                     author_ids.append(author_id)
                     authors.append(author)
         return authors
-
