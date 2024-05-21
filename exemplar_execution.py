@@ -79,4 +79,4 @@ result_q14 = mashup.getObjectsHandledByResponsiblePerson("Liddell")
 result_q15 = mashup.getObjectsHandledByResponsibleInstitution("Council")
 result_q16 = mashup.getAuthorsOfObjectsAcquiredInTimeFrame("2023-04-01", "2023-05-01")
 
-print("")
+print("debug breakpoint")

@@ -1,6 +1,6 @@
 from typing import Optional
 import os
-
+import math
 import json
 import csv
 
@@ -206,26 +206,29 @@ class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
                 for item in json_data:
                     activity = item.get(activity_type, {})
                     if activity:
-                        object_id = item['object id']
-                        activity_internal_id = f"{activity_type.capitalize()}-{activity_count:02d}"
-                        activity_count += 1
-                        activity_data.append({
-                            "Activity_internal_id": activity_internal_id,
-                            "Refers To": object_id_mapping.get(object_id, ""),
-                            "Responsible Institute": activity.get("responsible institute", ""),
-                            "Responsible Person": activity.get("responsible person", ""),
-                            "Technique": activity.get("technique", "") if activity_type == "acquisition" else "",
-                            "Tool_internal_id": f"{activity_internal_id}-tool",
-                            "Start Date": activity.get("start date", ""),
-                            "End Date": activity.get("end date", ""),
-                        })
-                        if 'tool' in activity:
-                            for tool in activity['tool']:
+                        start_date = activity.get("start date", "")
+                        end_date = activity.get("end date", "")
+                        if start_date != "" and end_date != "":
+                            object_id = item['object id']
+                            activity_internal_id = f"{activity_type.capitalize()}-{activity_count:02d}"
+                            activity_count += 1
+                            activity_data.append({
+                                "Activity_internal_id": activity_internal_id,
+                                "Refers To": object_id_mapping.get(object_id, ""),
+                                "Responsible Institute": activity.get("responsible institute", ""),
+                                "Responsible Person": activity.get("responsible person", ""),
+                                "Technique": activity.get("technique", "") if activity_type == "acquisition" else "",
+                                "Tool_internal_id": f"{activity_internal_id}-tool",
+                                "Start Date": activity.get("start date", ""),
+                                "End Date": activity.get("end date", ""),
+                            })
+                            if 'tool' in activity:
+                                tools_string = ', '.join(str(tool) for tool in activity['tool'])
                                 tools_data.append({
-                                    "Tool_internal_id": f"{activity_internal_id}-tool",
-                                    "Tool": tool,
-                                    "Activity_internal_id": activity_internal_id
-                                })
+                                        "Tool_internal_id": f"{activity_internal_id}-tool",
+                                        "Tool": tools_string,
+                                        "Activity_internal_id": activity_internal_id
+                                    })
                 activity_dfs[activity_type] = pd.DataFrame(activity_data)
         tools_df = pd.DataFrame(tools_data)
         return activity_dfs, tools_df
@@ -603,7 +606,7 @@ class MetadataQueryHandler(QueryHandler):
 
     def getById(self, id):
         person_query = "SELECT DISTINCT ?uri ?name ?id WHERE { ?object <https://schema.org/author> ?uri.  ?uri <https://schema.org/name> ?name.  ?uri <https://schema.org/identifier> ?id. ?uri <https://schema.org/identifier> '%s'. }" % id;
-        object_query = "SELECT DISTINCT ?object ?id ?type ?title ?date ?owner ?place ?author ?author_name ?author_id WHERE { ?object <https://schema.org/identifier> ?id.  ?object <https://schema.org/identifier> '%s'. ?object <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type. ?object <https://schema.org/name> ?title. ?object <https://schema.org/dateCreated> ?date. ?object <https://schema.org/copyrightHolder> ?owner. ?object <https://schema.org/spatial> ?place. ?object <https://schema.org/author> ?author. ?author <https://schema.org/name> ?author_name. ?author <https://schema.org/identifier> ?author_id.}" % id;
+        object_query = "SELECT DISTINCT ?object ?id ?type ?title ?date ?owner ?place ?author ?author_name ?author_id WHERE { ?object <https://schema.org/identifier> ?id. ?object <https://schema.org/identifier> '%s'. ?object <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?type. ?object <https://schema.org/name> ?title. ?object <https://schema.org/copyrightHolder> ?owner. ?object <https://schema.org/spatial> ?place. OPTIONAL{ ?object <https://schema.org/dateCreated> ?date. } OPTIONAL{ ?object <https://schema.org/author> ?author. ?author <https://schema.org/name> ?author_name. ?author <https://schema.org/identifier> ?author_id.}}" % id;
         person_df = self.execute_sparql_query(person_query);
         object_df = self.execute_sparql_query(object_query);
         if len(object_df.index) > 0: # if objects exist return objects
@@ -662,8 +665,8 @@ class MetadataQueryHandler(QueryHandler):
                 ?object <https://schema.org/author> ?author. 
                 ?author <https://schema.org/name> ?author_name.
                 ?author <https://schema.org/identifier> ?author_id.
-                ?author <https://schema.org/identifier> '%s'.
-            OPTIONAL{ ?object <https://schema.org/dateCreated> ?date. }}
+            OPTIONAL{ ?object <https://schema.org/dateCreated> ?date. }
+            FILTER CONTAINS(?author_id, '%s')}
             """ % personId
         return self.execute_sparql_query(query)
 
@@ -688,9 +691,9 @@ class BasicMashup(object):  #Hubert
                     cho,
                     row["Responsible Institute"],
                     row["Responsible Person"],
-                    row["Tool"],
                     row["Start Date"],
                     row["End Date"],
+                    row["Tool"],
                     row["Technique"]
                 )
                 activities.append(activity)
@@ -699,9 +702,9 @@ class BasicMashup(object):  #Hubert
                     cho,
                     row["Responsible Institute"],
                     row["Responsible Person"],
-                    row["Tool"],
                     row["Start Date"],
-                    row["End Date"]
+                    row["End Date"],
+                    row["Tool"]
                 )
                 activities.append(activity)
             elif "Modelling" in row["Activity_internal_id"]:
@@ -709,9 +712,9 @@ class BasicMashup(object):  #Hubert
                     cho,
                     row["Responsible Institute"],
                     row["Responsible Person"],
-                    row["Tool"],
                     row["Start Date"],
-                    row["End Date"]
+                    row["End Date"],
+                    row["Tool"]
                 )
                 activities.append(activity)
             elif "Optimising" in row["Activity_internal_id"]:
@@ -719,9 +722,9 @@ class BasicMashup(object):  #Hubert
                     cho,
                     row["Responsible Institute"],
                     row["Responsible Person"],
-                    row["Tool"],
                     row["Start Date"],
-                    row["End Date"]
+                    row["End Date"],
+                    row["Tool"]
                 )
                 activities.append(activity)
             elif "Exporting" in row["Activity_internal_id"]:
@@ -729,9 +732,9 @@ class BasicMashup(object):  #Hubert
                     cho,
                     row["Responsible Institute"],
                     row["Responsible Person"],
-                    row["Tool"],
                     row["Start Date"],
-                    row["End Date"]
+                    row["End Date"],
+                    row["Tool"]
                 )
                 activities.append(activity)
         
@@ -899,13 +902,14 @@ class AdvancedMashup(BasicMashup):
         for item in cho_list:
             person = item.getAuthors()
             person_id = person[0].id
-            if person_id == personId and item not in filt_cho:
+            if str(personId) in str(person_id) and item not in filt_cho:
                 filt_cho.append(item)
        
         activities_list = self.getAllActivities()
-        for item in activities_list: 
-            if item.refersTo_cho in filt_cho:
-                activities.append(item)
+        for item in activities_list:
+            for cho in filt_cho: 
+                if item.refersTo_cho.id == cho.id:
+                    activities.append(item)
         return activities 
     
     def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[CulturalHeritageObject]:  #giorgia
@@ -946,14 +950,29 @@ class AdvancedMashup(BasicMashup):
 
     def getAuthorsOfObjectsAcquiredInTimeFrame(self, start: str, end: str) -> list[Person]:  # Iheb
         authors = []
+        author_ids = []
         if len(self.processQuery) > 0:
             activities_before = self.getActivitiesEndedBefore(end)
             activities_after = self.getActivitiesStartedAfter(start)
-            activity_list = [value for value in activities_before if value in activities_after]
+            
+            acquisitions_before_set = {activity for activity in activities_before if isinstance(activity, Acquisition)}
+            acquisitions_after_set = {activity for activity in activities_after if isinstance(activity, Acquisition)}
+        
+            activity_list = []
+            filtered_ids = []
+
+            for acquisition in acquisitions_before_set:
+                filtered_ids.append(acquisition.refersTo_cho.id)
+
+            for acquisition in acquisitions_after_set:
+                if acquisition.refersTo_cho.id in filtered_ids:
+                    activity_list.append(acquisition)
             
             for activity in activity_list:
-                if activity.refersTo_cho.person[0] and activity.refersTo_cho.person[0] not in authors: 
-                    author = activity.refersTo_cho.person[0]    
+                author = activity.refersTo_cho.hasAuthor[0] 
+                author_id = author.id
+                if author_id not in author_ids and author_id == author_id:
+                    author_ids.append(author_id)
                     authors.append(author)
         return authors
 
