@@ -244,7 +244,9 @@ class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
         try:
             with connect(self.dbPathOrUrl) as conn:
                 for activity_type, df in self.activity_dfs.items():
+                    df = self.handle_duplicates(df, conn, activity_type.capitalize())
                     df.to_sql(activity_type.capitalize(), conn, if_exists='replace', index=False, dtype="string")
+                self.tools_df = self.handle_duplicates(self.tools_df, conn, 'Tools')
                 self.tools_df.to_sql('Tools', conn, if_exists='replace', index=False, dtype="string")
             return True  # Return True if all operations succeed
         except Exception as e:
