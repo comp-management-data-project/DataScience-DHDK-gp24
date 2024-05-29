@@ -815,7 +815,12 @@ class BasicMashup(object):  #Hubert
     def getAllPeople(self):
         person_list = [];
         if len(self.metadataQuery) > 0:
-            person_df = self.metadataQuery[0].getAllPeople();
+            person_df = pd.DataFrame();
+            new_person_df_list = [];
+            for handler in self.metadataQuery:
+                new_person_df = handler.getAllPeople();
+                new_person_df_list.append(new_person_df);
+            person_df.merge(new_person_df_list, on=['author_id'], how='inner').drop_duplicates(subset=['author_id'], keep='first', inplace=True, ignore_index=True);
             for idx, row in person_df.iterrows():
                 if row["author_id"] != " " and row["author_name"] != " ":
                     person = Person(row["author_id"], row["author_name"]);
@@ -825,14 +830,24 @@ class BasicMashup(object):  #Hubert
     def getAllCulturalHeritageObjects(self) -> list[CulturalHeritageObject]:  # Iheb
        cho_list = []
        if len(self.metadataQuery) > 0:
-        cho_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
+        cho_df = pd.DataFrame();
+        new_object_df_list = [];
+        for handler in self.metadataQuery:
+            new_object_df = handler.getAllCulturalHeritageObjects();
+            new_object_df_list.append(new_object_df);
+        cho_df.merge(new_object_df_list, on=['id'], how='inner').drop_duplicates(subset=['id'], keep='first', inplace=True, ignore_index=True);
         cho_list =  self.createObjectList(cho_df)
        return cho_list
 
     def getAuthorsOfCulturalHeritageObject(self, objectId: str) -> list[Person]:
         author_list = []
         if len(self.metadataQuery) > 0:
-            author_df = self.metadataQuery[0].getAuthorsOfCulturalHeritageObject(objectId)
+            author_df = pd.DataFrame();
+            new_person_df_list = [];
+            for handler in self.metadataQuery:
+                new_person_df = handler.getAuthorsOfCulturalHeritageObject(objectId);
+                new_person_df_list.append(new_person_df);
+            author_df.merge(new_person_df_list, on=['author_id'], how='inner').drop_duplicates(subset=['author_id'], keep='first', inplace=True, ignore_index=True);
             for idx, row in author_df.iterrows():
                 if row["author_id"] != " " and row["author_name"] != " ":
                     person = Person(row["author_id"], row["author_name"])
@@ -842,56 +857,96 @@ class BasicMashup(object):  #Hubert
     def getCulturalHeritageObjectsAuthoredBy(self, AuthorId: str) -> list[CulturalHeritageObject]:  # Iheb
        cho_list = []
        if len(self.metadataQuery) > 0:
-        cho_df = self.metadataQuery[0].getCulturalHeritageObjectsAuthoredBy(AuthorId)
+        cho_df = pd.DataFrame();
+        new_object_df_list = [];
+        for handler in self.metadataQuery:
+            new_object_df = handler.getCulturalHeritageObjectsAuthoredBy(AuthorId);
+            new_object_df_list.append(new_object_df);
+        cho_df.merge(new_object_df_list, on=['id'], how='inner').drop_duplicates(subset=['id'], keep='first', inplace=True, ignore_index=True);
         cho_list =  self.createObjectList(cho_df)
         return cho_list
 
     def getAllActivities(self): # Giorgia
         activities = []
         if len(self.processQuery) > 0:
-            activities_df = self.processQuery[0].getAllActivities();
+            activities_df = pd.DataFrame();
+            new_activities_df_list = [];
+            for handler in self.processQuery:
+                new_activities_df = handler.getAllActivities();
+                new_activities_df_list.append(new_activities_df);
+            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
             activities = self.createActivityList(activities_df);
         return activities;
     
     def getActivitiesByResponsibleInstitution(self, partialName: str) -> list[Activity]:
         activities = []  
         if len(self.processQuery) > 0:  # check handlers 
-            activities_df = self.processQuery[0].getActivitiesByResponsibleInstitution(partialName)  
+            activities_df = pd.DataFrame();
+            new_activities_df_list = [];
+            for handler in self.processQuery:
+                new_activities_df = handler.getActivitiesByResponsibleInstitution(partialName);
+                new_activities_df_list.append(new_activities_df);
+            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
             activities = self.createActivityList(activities_df) 
         return activities  
 
     def getActivitiesByResponsiblePerson(self, partialName: str) -> list[Activity]:  # Giorgia
         activities = []  
         if len(self.processQuery) > 0:  #check for handlers 
-            activities_df = self.processQuery[0].getActivitiesByResponsiblePerson(partialName)  
+            activities_df = pd.DataFrame();
+            new_activities_df_list = [];
+            for handler in self.processQuery:
+                new_activities_df = handler.getActivitiesByResponsiblePerson(partialName);
+                new_activities_df_list.append(new_activities_df);
+            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
             activities = self.createActivityList(activities_df) 
         return activities  
 
     def getActivitiesUsingTool(self, partial_name: str):  # Giorgia
         activities = []
         if len(self.processQuery) > 0:
-            activities_df = self.processQuery[0].getActivitiesUsingTool(partial_name);
+            activities_df = pd.DataFrame();
+            new_activities_df_list = [];
+            for handler in self.processQuery:
+                new_activities_df = handler.getActivitiesUsingTool(partial_name);
+                new_activities_df_list.append(new_activities_df);
+            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
             activities = self.createActivityList(activities_df);
         return activities;
 
     def getActivitiesStartedAfter(self, date: str) -> list[Activity]:
         activities = []  
         if len(self.processQuery) > 0:  
-            activities_df = self.processQuery[0].getActivitiesStartedAfter(date)  
+            activities_df = pd.DataFrame();
+            new_activities_df_list = [];
+            for handler in self.processQuery:
+                new_activities_df = handler.getActivitiesStartedAfter(date) ;
+                new_activities_df_list.append(new_activities_df);
+            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
             activities = self.createActivityList(activities_df) 
         return activities  
         
     def getActivitiesEndedBefore(self, date: str) -> list[Activity]:
         activities = []  
         if len(self.processQuery) > 0:  
-            activities_df = self.processQuery[0].getActivitiesEndedBefore(date)  
+            activities_df = pd.DataFrame();
+            new_activities_df_list = [];
+            for handler in self.processQuery:
+                new_activities_df = handler.getActivitiesEndedBefore(date) ;
+                new_activities_df_list.append(new_activities_df);
+            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
             activities = self.createActivityList(activities_df) 
         return activities
 
     def getAcquisitionsByTechnique(self, technique: str) -> list[Acquisition]: #Giorgia
         activities = []  
         if len(self.processQuery) > 0:  
-            activities_df = self.processQuery[0].getAcquisitionsByTechnique(technique)  
+            activities_df = pd.DataFrame();
+            new_activities_df_list = [];
+            for handler in self.processQuery:
+                new_activities_df = handler.getAcquisitionsByTechnique(technique);
+                new_activities_df_list.append(new_activities_df);
+            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
             activities = self.createActivityList(activities_df) 
         return activities 
 
@@ -918,10 +973,10 @@ class AdvancedMashup(BasicMashup):
     def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[CulturalHeritageObject]:  #giorgia
         objects = []
         if len(self.processQuery) > 0:
-            institutions_df = self.processQuery[0].getActivitiesByResponsiblePerson(partialName)
+            institutions_df = self.getActivitiesByResponsiblePerson(partialName)
             activities = self.createActivityList(institutions_df)
             if len(self.metadataQuery) > 0:
-                objects_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
+                objects_df = self.getAllCulturalHeritageObjects()
                 object_list = self.createObjectList(objects_df)
                 object_ids = []
                 for activity in activities:
@@ -936,10 +991,10 @@ class AdvancedMashup(BasicMashup):
     def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[CulturalHeritageObject]:  # Iheb
         objects = []
         if len(self.processQuery) > 0:
-            institutions_df = self.processQuery[0].getActivitiesByResponsibleInstitution(partialName)
+            institutions_df = self.getActivitiesByResponsibleInstitution(partialName)
             activities = self.createActivityList(institutions_df)
             if len(self.metadataQuery) > 0:
-                objects_df = self.metadataQuery[0].getAllCulturalHeritageObjects()
+                objects_df = self.getAllCulturalHeritageObjects()
                 object_list = self.createObjectList(objects_df)
                 object_ids = []
                 for activity in activities:
