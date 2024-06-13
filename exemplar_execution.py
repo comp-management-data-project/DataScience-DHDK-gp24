@@ -31,7 +31,7 @@ from impl import AdvancedMashup
 rel_path = "relational.db"
 process = ProcessDataUploadHandler()
 process.setDbPathOrUrl(rel_path)
-process.pushDataToDb("data/process.json")
+process.pushDataToDb("C:\\kucing\\ciao_a_tutti\\ciao_a_tutti\\data\\process.json")
 # Please remember that one could, in principle, push one or more files
 # calling the method one or more times (even calling the method twice
 # specifying the same file!)
@@ -41,7 +41,7 @@ process.pushDataToDb("data/process.json")
 grp_endpoint = "http://127.0.0.1:9999/blazegraph/sparql"
 metadata = MetadataUploadHandler()
 metadata.setDbPathOrUrl(grp_endpoint)
-metadata.pushDataToDb("data/meta.csv")
+metadata.pushDataToDb("C:\\kucing\\ciao_a_tutti\\ciao_a_tutti\\data\\meta.csv")
 # Please remember that one could, in principle, push one or more files
 # calling the method one or more times (even calling the method twice
 # specifying the same file!)
@@ -60,21 +60,21 @@ mashup = AdvancedMashup()
 mashup.addProcessHandler(process_qh)
 mashup.addMetadataHandler(metadata_qh)
 
-result_q1 = mashup.getEntityById("1")
+result_q1 = mashup.getEntityById("VIAF:78822798")
 result_q2 = mashup.getAllPeople()
 result_q3 = mashup.getAllCulturalHeritageObjects()
 result_q4 = mashup.getAuthorsOfCulturalHeritageObject("1")
-result_q5 = mashup.getCulturalHeritageObjectsAuthoredBy("265397758")
+result_q5 = mashup.getCulturalHeritageObjectsAuthoredBy("VIAF:78822798")
 
 result_q6 = mashup.getAllActivities()
 result_q7 = mashup.getActivitiesByResponsibleInstitution("Council")
 result_q8 = mashup.getActivitiesByResponsiblePerson("Liddell")
 result_q9 = mashup.getActivitiesUsingTool("Blender")
-result_q10 = mashup.getActivitiesStartedAfter("2023-04-01")
-result_q11 = mashup.getActivitiesEndedBefore("2023-05-01")
+result_q10 = mashup.getActivitiesStartedAfter("2023-05-08")
+result_q11 = mashup.getActivitiesEndedBefore("2023-05-09")
 result_q12 = mashup.getAcquisitionsByTechnique("Photogrammetry")
 
-result_q13 = mashup.getActivitiesOnObjectsAuthoredBy("265397758")
+result_q13 = mashup.getActivitiesOnObjectsAuthoredBy("VIAF:78822798")
 result_q14 = mashup.getObjectsHandledByResponsiblePerson("Liddell")
 result_q15 = mashup.getObjectsHandledByResponsibleInstitution("Council")
 result_q16 = mashup.getAuthorsOfObjectsAcquiredInTimeFrame("2023-04-01", "2023-05-01")

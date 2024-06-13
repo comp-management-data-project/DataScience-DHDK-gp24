@@ -254,7 +254,10 @@ class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
             return False  # Return False if any error occurs
  
     def handle_duplicates(self, df, conn, table_name):
-        existing_data = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+        try:
+            existing_data = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+        except Exception as e:
+            existing_data = pd.DataFrame();
         df = df[~df.duplicated(keep='first')]
         if not existing_data.empty:
             df = pd.concat([existing_data, df]).drop_duplicates(keep='first')
@@ -511,27 +514,27 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Acquisition AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[Start Date] > '{date}'
+	    WHERE A.[Start Date] >= '{date}'
         UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Exporting AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[Start Date] > '{date}'
+	    WHERE A.[Start Date] >= '{date}'
         UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Modelling AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[Start Date] > '{date}'
+	    WHERE A.[Start Date] >= '{date}'
         UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Optimising AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[Start Date] > '{date}'
+	    WHERE A.[Start Date] >= '{date}'
         UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Processing AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[Start Date] > '{date}';
+	    WHERE A.[Start Date] >= '{date}';
         """
         return self.executeQuery(sql_command)
 
@@ -540,27 +543,27 @@ class ProcessDataQueryHandler(QueryHandler):        # Lucrezia
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Acquisition AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[End Date] < '{date}'
+	    WHERE A.[End Date] <= '{date}'
         UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Exporting AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[End Date] < '{date}'
+	    WHERE A.[End Date] <= '{date}'
         UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Modelling AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[End Date] < '{date}'
+	    WHERE A.[End Date] <= '{date}'
         UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Optimising AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[End Date] < '{date}'
+	    WHERE A.[End Date] <= '{date}'
         UNION
         SELECT A.Activity_internal_id, A.[Refers To], A.[Responsible Institute], A.[Responsible Person], A.Technique, A.[Start Date], A.[End Date], T.Tool
         FROM Processing AS A
 	    INNER JOIN Tools AS T ON A.Tool_internal_id = T.Tool_internal_id
-	    WHERE A.[End Date] < '{date}';
+	    WHERE A.[End Date] <= '{date}';
         """
         return self.executeQuery(sql_command)
 
@@ -612,7 +615,7 @@ class MetadataQueryHandler(QueryHandler):
 
     def getAllPeople(self):
         query = """
-            SELECT DISTINCT ?uri ?author_name ?author_id
+            SELECT DISTINCT ?author_id ?author_name
             WHERE {
                 ?object <https://schema.org/author> ?author .
                 ?author <https://schema.org/identifier> ?author_id .
@@ -683,6 +686,7 @@ class BasicMashup(object):  #Hubert
         # formatted version Lucrezia
         for idx, row in df.iterrows():
             cho = self.getEntityById(row["Refers To"].split('-')[1])
+            tools = [s.strip() for s in row["Tool"].split(",")] if "," in row["Tool"] else [row["Tool"]];
             if "Acquisition" in row["Activity_internal_id"]:
                 activity = Acquisition(
                     cho,
@@ -690,7 +694,7 @@ class BasicMashup(object):  #Hubert
                     row["Responsible Person"],
                     row["Start Date"],
                     row["End Date"],
-                    row["Tool"],
+                    tools,
                     row["Technique"]
                 )
                 activities.append(activity)
@@ -701,7 +705,7 @@ class BasicMashup(object):  #Hubert
                     row["Responsible Person"],
                     row["Start Date"],
                     row["End Date"],
-                    row["Tool"]
+                    tools
                 )
                 activities.append(activity)
             elif "Modelling" in row["Activity_internal_id"]:
@@ -711,7 +715,7 @@ class BasicMashup(object):  #Hubert
                     row["Responsible Person"],
                     row["Start Date"],
                     row["End Date"],
-                    row["Tool"]
+                    tools
                 )
                 activities.append(activity)
             elif "Optimising" in row["Activity_internal_id"]:
@@ -721,7 +725,7 @@ class BasicMashup(object):  #Hubert
                     row["Responsible Person"],
                     row["Start Date"],
                     row["End Date"],
-                    row["Tool"]
+                    tools
                 )
                 activities.append(activity)
             elif "Exporting" in row["Activity_internal_id"]:
@@ -731,7 +735,7 @@ class BasicMashup(object):  #Hubert
                     row["Responsible Person"],
                     row["Start Date"],
                     row["End Date"],
-                    row["Tool"]
+                    tools
                 )
                 activities.append(activity)
         
@@ -807,8 +811,8 @@ class BasicMashup(object):  #Hubert
             if cho_list:
                 return cho_list[0]  
         
-        if 'name' in df.columns and 'author_id' in df.columns: 
-            return Person(df.iloc[0]["author_id"], df.iloc[0]["author_name"])
+        if 'name' in df.columns and 'id' in df.columns: 
+            return Person(df.iloc[0]["id"], df.iloc[0]["name"])
         
         return None
 
@@ -820,7 +824,11 @@ class BasicMashup(object):  #Hubert
             for handler in self.metadataQuery:
                 new_person_df = handler.getAllPeople();
                 new_person_df_list.append(new_person_df);
-            person_df.merge(new_person_df_list, on=['author_id'], how='inner').drop_duplicates(subset=['author_id'], keep='first', inplace=True, ignore_index=True);
+            
+            person_df = new_person_df_list[0];
+            for d in new_person_df_list[1:]:
+                person_df = person_df.merge(d, on=['author_id'], how='inner').drop_duplicates(subset=['author_id'], keep='first', inplace=True, ignore_index=True);
+            
             for idx, row in person_df.iterrows():
                 if row["author_id"] != " " and row["author_name"] != " ":
                     person = Person(row["author_id"], row["author_name"]);
@@ -835,7 +843,11 @@ class BasicMashup(object):  #Hubert
         for handler in self.metadataQuery:
             new_object_df = handler.getAllCulturalHeritageObjects();
             new_object_df_list.append(new_object_df);
-        cho_df.merge(new_object_df_list, on=['id'], how='inner').drop_duplicates(subset=['id'], keep='first', inplace=True, ignore_index=True);
+        
+        cho_df = new_object_df_list[0];
+        for d in new_object_df_list[1:]:
+            cho_df = cho_df.merge(d, on=['id'], how='inner').drop_duplicates(subset=['id'], keep='first', inplace=True, ignore_index=True);
+
         cho_list =  self.createObjectList(cho_df)
        return cho_list
 
@@ -847,7 +859,11 @@ class BasicMashup(object):  #Hubert
             for handler in self.metadataQuery:
                 new_person_df = handler.getAuthorsOfCulturalHeritageObject(objectId);
                 new_person_df_list.append(new_person_df);
-            author_df.merge(new_person_df_list, on=['author_id'], how='inner').drop_duplicates(subset=['author_id'], keep='first', inplace=True, ignore_index=True);
+            
+            author_df = new_person_df_list[0];
+            for d in new_person_df_list[1:]:
+                author_df = author_df.merge(d, on=['author_id'], how='inner').drop_duplicates(subset=['author_id'], keep='first', inplace=True, ignore_index=True);
+
             for idx, row in author_df.iterrows():
                 if row["author_id"] != " " and row["author_name"] != " ":
                     person = Person(row["author_id"], row["author_name"])
@@ -862,7 +878,11 @@ class BasicMashup(object):  #Hubert
         for handler in self.metadataQuery:
             new_object_df = handler.getCulturalHeritageObjectsAuthoredBy(AuthorId);
             new_object_df_list.append(new_object_df);
-        cho_df.merge(new_object_df_list, on=['id'], how='inner').drop_duplicates(subset=['id'], keep='first', inplace=True, ignore_index=True);
+        
+        cho_df = new_object_df_list[0];
+        for d in new_object_df_list[1:]:
+            cho_df = cho_df.merge(d, on=['id'], how='inner').drop_duplicates(subset=['id'], keep='first', inplace=True, ignore_index=True);
+
         cho_list =  self.createObjectList(cho_df)
         return cho_list
 
@@ -874,7 +894,11 @@ class BasicMashup(object):  #Hubert
             for handler in self.processQuery:
                 new_activities_df = handler.getAllActivities();
                 new_activities_df_list.append(new_activities_df);
-            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+
+            activities_df = new_activities_df_list[0];
+            for d in new_activities_df_list[1:]:
+                activities_df = activities_df.merge(d, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+
             activities = self.createActivityList(activities_df);
         return activities;
     
@@ -886,7 +910,11 @@ class BasicMashup(object):  #Hubert
             for handler in self.processQuery:
                 new_activities_df = handler.getActivitiesByResponsibleInstitution(partialName);
                 new_activities_df_list.append(new_activities_df);
-            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
+            activities_df = new_activities_df_list[0];
+            for d in new_activities_df_list[1:]:
+                activities_df = activities_df.merge(d, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
             activities = self.createActivityList(activities_df) 
         return activities  
 
@@ -898,7 +926,11 @@ class BasicMashup(object):  #Hubert
             for handler in self.processQuery:
                 new_activities_df = handler.getActivitiesByResponsiblePerson(partialName);
                 new_activities_df_list.append(new_activities_df);
-            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
+            activities_df = new_activities_df_list[0];
+            for d in new_activities_df_list[1:]:
+                activities_df = activities_df.merge(d, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
             activities = self.createActivityList(activities_df) 
         return activities  
 
@@ -910,7 +942,11 @@ class BasicMashup(object):  #Hubert
             for handler in self.processQuery:
                 new_activities_df = handler.getActivitiesUsingTool(partial_name);
                 new_activities_df_list.append(new_activities_df);
-            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
+            activities_df = new_activities_df_list[0];
+            for d in new_activities_df_list[1:]:
+                activities_df = activities_df.merge(d, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
             activities = self.createActivityList(activities_df);
         return activities;
 
@@ -922,7 +958,11 @@ class BasicMashup(object):  #Hubert
             for handler in self.processQuery:
                 new_activities_df = handler.getActivitiesStartedAfter(date) ;
                 new_activities_df_list.append(new_activities_df);
-            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
+            activities_df = new_activities_df_list[0];
+            for d in new_activities_df_list[1:]:
+                activities_df = activities_df.merge(d, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
             activities = self.createActivityList(activities_df) 
         return activities  
         
@@ -934,7 +974,11 @@ class BasicMashup(object):  #Hubert
             for handler in self.processQuery:
                 new_activities_df = handler.getActivitiesEndedBefore(date) ;
                 new_activities_df_list.append(new_activities_df);
-            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
+            activities_df = new_activities_df_list[0];
+            for d in new_activities_df_list[1:]:
+                activities_df = activities_df.merge(d, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
             activities = self.createActivityList(activities_df) 
         return activities
 
@@ -946,7 +990,11 @@ class BasicMashup(object):  #Hubert
             for handler in self.processQuery:
                 new_activities_df = handler.getAcquisitionsByTechnique(technique);
                 new_activities_df_list.append(new_activities_df);
-            activities_df.merge(new_activities_df_list, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
+            activities_df = new_activities_df_list[0];
+            for d in new_activities_df_list[1:]:
+                activities_df = activities_df.merge(d, on=['Activity_internal_id'], how='inner').drop_duplicates(subset=['Activity_internal_id'], keep='first', inplace=True, ignore_index=True);
+            
             activities = self.createActivityList(activities_df) 
         return activities 
 
@@ -973,11 +1021,9 @@ class AdvancedMashup(BasicMashup):
     def getObjectsHandledByResponsiblePerson(self, partialName: str) -> list[CulturalHeritageObject]:  #giorgia
         objects = []
         if len(self.processQuery) > 0:
-            institutions_df = self.getActivitiesByResponsiblePerson(partialName)
-            activities = self.createActivityList(institutions_df)
+            activities = self.getActivitiesByResponsiblePerson(partialName)
             if len(self.metadataQuery) > 0:
-                objects_df = self.getAllCulturalHeritageObjects()
-                object_list = self.createObjectList(objects_df)
+                object_list = self.getAllCulturalHeritageObjects()
                 object_ids = []
                 for activity in activities:
                     activity_id = activity.refersTo_cho.id
@@ -991,11 +1037,9 @@ class AdvancedMashup(BasicMashup):
     def getObjectsHandledByResponsibleInstitution(self, partialName: str) -> list[CulturalHeritageObject]:  # Iheb
         objects = []
         if len(self.processQuery) > 0:
-            institutions_df = self.getActivitiesByResponsibleInstitution(partialName)
-            activities = self.createActivityList(institutions_df)
+            activities = self.getActivitiesByResponsibleInstitution(partialName)
             if len(self.metadataQuery) > 0:
-                objects_df = self.getAllCulturalHeritageObjects()
-                object_list = self.createObjectList(objects_df)
+                object_list = self.getAllCulturalHeritageObjects()
                 object_ids = []
                 for activity in activities:
                     activity_id = activity.refersTo_cho.id
