@@ -347,10 +347,10 @@ class MetadataUploadHandler(UploadHandler):     # Hubert
                 if row["Author"] != "":
                     # strip author string to name and author id
                     full_author = row["Author"].strip('\"').split(";")
-                    for author in full_author:
-                        author_id = full_author.split("(")[1]
+                    for author_string in full_author:
+                        author_id = author_string.split("(")[1]
                         author_id = author_id[:-1].strip()
-                        author_name = full_author.split("(")[0].strip()
+                        author_name = author_string.split("(")[0].strip()
                         author_res_id = base_url + "Person/" + author_id
                         subj_author = URIRef(author_res_id)
                         graph.add((subj, author, subj_author))
