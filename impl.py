@@ -285,8 +285,10 @@ class MetadataUploadHandler(UploadHandler):     # Hubert
                                 "Owner": "string",
                                 "Place": "string"
                             });
-
-            # classes of resources
+            #removing duplicates based on Id column, keeping the first instance
+            meta.drop_duplicates(subset=["Id"], keep="first", inplace=True, ignore_index=True)
+            
+	    # classes of resources
             NauticalChart = URIRef("http://dbpedia.org/resource/Nautical_chart");
             ManuscriptPlate = URIRef(base_url + "Manuscript_plate");
             ManuscriptVolume = URIRef(base_url + "Manuscript_volume");
@@ -344,15 +346,16 @@ class MetadataUploadHandler(UploadHandler):     # Hubert
                 # assigning author
                 if row["Author"] != "":
                     # strip author string to name and author id
-                    full_author = row["Author"].strip('\"')
-                    author_id = full_author.split("(")[1]
-                    author_id = author_id[:-1].strip()
-                    author_name = full_author.split("(")[0].strip()
-                    author_res_id = base_url + "Person/" + author_id
-                    subj_author = URIRef(author_res_id)
-                    graph.add((subj, author, subj_author))
-                    graph.add((subj_author, title, Literal(str(author_name))))
-                    graph.add((subj_author, id, Literal(str(author_id))))
+                    full_author = row["Author"].strip('\"').split(";")
+                    for author in full_author:
+                        author_id = full_author.split("(")[1]
+                        author_id = author_id[:-1].strip()
+                        author_name = full_author.split("(")[0].strip()
+                        author_res_id = base_url + "Person/" + author_id
+                        subj_author = URIRef(author_res_id)
+                        graph.add((subj, author, subj_author))
+                        graph.add((subj_author, title, Literal(str(author_name))))
+                        graph.add((subj_author, id, Literal(str(author_id))))
                 # assigning owner
                 if row["Owner"] != "":
                     graph.add((subj, owner, Literal(row["Owner"])))
