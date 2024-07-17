@@ -31,7 +31,7 @@ from impl import AdvancedMashup
 rel_path = "relational.db"
 process = ProcessDataUploadHandler()
 process.setDbPathOrUrl(rel_path)
-process.pushDataToDb("C:\\kucing\\ciao_a_tutti\\ciao_a_tutti\\data\\process.json")
+process.pushDataToDb("C:\\kucing\\peroni\\DataScience-DHDK-gp24\\data\\process.json")
 # Please remember that one could, in principle, push one or more files
 # calling the method one or more times (even calling the method twice
 # specifying the same file!)
@@ -41,7 +41,7 @@ process.pushDataToDb("C:\\kucing\\ciao_a_tutti\\ciao_a_tutti\\data\\process.json
 grp_endpoint = "http://127.0.0.1:9999/blazegraph/sparql"
 metadata = MetadataUploadHandler()
 metadata.setDbPathOrUrl(grp_endpoint)
-metadata.pushDataToDb("C:\\kucing\\ciao_a_tutti\\ciao_a_tutti\\data\\meta.csv")
+metadata.pushDataToDb("C:\\kucing\\peroni\\DataScience-DHDK-gp24\\data\\meta.csv")
 # Please remember that one could, in principle, push one or more files
 # calling the method one or more times (even calling the method twice
 # specifying the same file!)

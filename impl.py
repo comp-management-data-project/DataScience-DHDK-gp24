@@ -118,11 +118,11 @@ class Activity(object): # Lucrezia
     def getEndDate(self) -> Optional[str]:
         return self.end
     
-    def getRefersTo_cho(self) -> CulturalHeritageObject:
+    def refersTo(self) -> CulturalHeritageObject:
         return self.refersTo_cho
 
 class Acquisition(Activity):
-    def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str, start: str, end: str, technique: str, tool: set = set()):
+    def __init__(self, refersTo_cho: CulturalHeritageObject, institute: str, person: str, start: str, end: str, technique: str, tool):
         super().__init__(refersTo_cho, institute, person, start, end, tool)
         self.technique = technique
     
@@ -225,7 +225,7 @@ class ProcessDataUploadHandler(UploadHandler):    # Lucrezia
                                 "End Date": activity.get("end date", ""),
                             })
                             if 'tool' in activity:
-                                tools_string = ', '.join(str(tool) for tool in activity['tool'])
+                                tools_string = '🤪 '.join(str(tool) for tool in activity['tool'])
                                 tools_data.append({
                                         "Tool_internal_id": f"{activity_internal_id}-tool",
                                         "Tool": tools_string,
@@ -689,7 +689,9 @@ class BasicMashup(object):  #Hubert
         # formatted version Lucrezia
         for idx, row in df.iterrows():
             cho = self.getEntityById(row["Refers To"].split('-')[1])
-            tools = [s.strip() for s in row["Tool"].split(",")] if "," in row["Tool"] else [row["Tool"]];
+            tools = [];
+            if row["Tool"] != '':
+                tools = [s.strip() for s in row["Tool"].split("🤪")] if "🤪" in row["Tool"] else [row["Tool"]];
             if "Acquisition" in row["Activity_internal_id"]:
                 activity = Acquisition(
                     cho,
@@ -697,8 +699,8 @@ class BasicMashup(object):  #Hubert
                     row["Responsible Person"],
                     row["Start Date"],
                     row["End Date"],
+                    row["Technique"],
                     tools,
-                    row["Technique"]
                 )
                 activities.append(activity)
             elif "Processing" in row["Activity_internal_id"]:
